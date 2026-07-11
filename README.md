@@ -32,10 +32,22 @@ test-storage.html  browser harness for the storage layer
 
 ## The program
 
-`plan.json` is the whole program. The app hardcodes no exercise names, days, or rep
-ranges: everything renders from this file. To change the program, edit `plan.json`
-and push. History survives, because every log is keyed by exercise `id`, never by
-name or position.
+`plan.json` is the whole program, including the training `rules`. The app hardcodes
+no exercise names, days, rep ranges, day types, or rules: everything renders from
+this file. To change the program, edit `plan.json` and push. History survives,
+because every log is keyed by exercise `id`, never by name or position.
+
+## Four pages, four colours
+
+Bottom navigation: Today, Calendar, History, Plan. Colour carries meaning and never
+decoration:
+
+- Amber `#F0A93B`: you got stronger (the ADD WEIGHT rail, a personal best on a
+  chart, a weight increase dot on the calendar).
+- Ember `#FF7A59`: push days. Teal `#3FC1AC`: pull days. Driven by `dayType`.
+- Violet `#8B7DD8`: bodyweight and measurements.
+
+Buttons, headers, and navigation stay uncoloured.
 
 ## Progression
 
@@ -43,6 +55,29 @@ Double progression. When every logged set of an exercise reaches `repMax`, the a
 flags it. The next time that exercise appears, the card shows an amber `ADD WEIGHT`
 rail, the weight is pre-incremented by that exercise's increment, and reps reset to
 `repMin`. The user just taps the check.
+
+## The rules live in the app
+
+The `rules` object in `plan.json` renders as a read only Plan page. Three of the
+rules are scheduled events, not reference text: the week 1-2 ramp, the week 4 lateral
+raise review, and the week 6 deload. The app computes the block week from the first
+logged session and surfaces the right banner on the session screen by itself. During
+a deload week it halves every displayed target set count. `Start new block` on the
+Plan page resets the week counter without touching any logs.
+
+## Form reference
+
+Each exercise can carry up to three `cues` and an optional `video` link in
+`plan.json`. They render only on the exercise detail page, reached by tapping the
+exercise name. There is never a video control in the logging flow. The plan ships
+with `video: null` everywhere: paste your own links into the JSON once.
+
+## Calendar
+
+A month grid, Monday to Sunday. Logged push days are ember, logged pull days are
+teal, a weight increase gets an amber corner dot, Monday is neutral, today gets a
+bone ring. Above it: current streak, longest, this month, adherence. A missed Monday
+never breaks a streak, and a broken streak is shown, not scolded.
 
 ## Backup
 
