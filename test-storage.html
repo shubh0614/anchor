@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ANCHOR storage harness</title>
+  <style>
+    body { background: #0E1014; color: #E9E7E2; font-family: ui-monospace, monospace; padding: 16px; line-height: 1.5; }
+    h1 { font-size: 18px; }
+    button { background: #1F232C; color: #E9E7E2; border: 1px solid #2A2F3A; padding: 12px 16px; margin: 4px 0; border-radius: 8px; cursor: pointer; min-height: 48px; display: block; width: 100%; text-align: left; }
+    button:hover { background: #2A2F3A; }
+    .pass { color: #7CCf7C; }
+    .fail { color: #ff6b6b; }
+    .info { color: #8B93A1; }
+    pre { background: #171A21; padding: 12px; border-radius: 8px; overflow-x: auto; white-space: pre-wrap; }
+    .row { display: flex; gap: 8px; }
+    .row button { flex: 1; }
+  </style>
+</head>
+<body>
+  <h1>ANCHOR storage harness</h1>
+  <p class="info">Runs the real storage.js against this browser's localStorage and IndexedDB.</p>
+
+  <div class="row">
+    <button id="run">Run in-memory test suite</button>
+    <button id="seed">Seed 2 sessions</button>
+  </div>
+  <div class="row">
+    <button id="clearLs">Clear localStorage, then reload</button>
+    <button id="clearIdb">Clear IndexedDB, then reload</button>
+  </div>
+  <button id="wipe">Wipe both stores (reset harness)</button>
+
+  <pre id="out"></pre>
+
+  <script type="module">
+    import { Store } from "./storage.js";
+
+    const out = document.getElementById("out");
+    function log(msg, cls) {
+      const span = document.createElement("span");
+      span.className = cls || "";
+      span.textContent = msg + "\n";
+      out.appendChild(span);
+    }
+    function clear() { out.textContent = ""; }
+
+    let pass = 0, fail = 0;
+    function check(name, cond) {
+      if (cond) { pass++; log("PASS  " + name, "pass"); }
+      else { fail++; log("FAIL  " + name, "fail"); }
+    }
+
+    function sampleSession(id, date, dayId) {
+      return {
+        sessionId: id, date, dayId, planVersion: "v5",
+        startedAt: Date.now(), endedAt: Date.now(),
+        entries: [
+          { exerciseId: "smith_incline", skipped: false, sets: [
+            { weight: 60, reps: 10, loggedAt: Date.now() },
+            { weight: 60, reps: 9, loggedAt: Date.now() },
+          ]},
+          { exerciseId: "leg_extension", skipped: true, skipReason: "machine busy", sets: [] },
+        ],
+      };
+    }
+
+    // On load, report whether a heal or restore happened (survives reload test).
+    Store.onEvent((e) => {
+      if (e.type === "restored") log("EVENT restored from " + e.from, "pass");
+      if (e.type === "healed") log("EVENT healed " + e.store, "info");
+    });
+
+    await Store.load();
+    log("Loaded. Sessions in store: " + Store.getSessions().length, "info");
+    if (Store.getSessions().length > 0) {
+      const ls = Store._peekLocalStorage();
+      Store._peekIndexedDb().then((idb) => {
+        log("After reload: localStorage sessions=" +
+          (ls ? Object.keys(ls.sessions).length : "null") +
+          ", indexedDB sessions=" + (idb ? Object.keys(idb.sessions).length : "null"), "info");
+      });
+    }
+
+    document.getElementById("run").onclick = async () => {
+      clear(); pass = 0; fail = 0;
+      await Store._clearLocalStorage();
+      await Store._clearIndexedDb();
+      await Store.load();
+
+      await Store.saveSession(sampleSession("2026-07-14_day1", "2026-07-14", 1));
+      await Store.saveSession(sampleSession("2026-07-15_day2", "2026-07-15", 2));
+      let ls = Store._peekLocalStorage();
+      let idb = await Store._peekIndexedDb();
+      check("both stores have 2 sessions",
+        Object.keys(ls.sessions).length === 2 && Object.keys(idb.sessions).length === 2);
+
+      await Store._clearLocalStorage();
+      await Store.load();
+      check("localStorage healed from IndexedDB", Store.getSessions().length === 2 &&
+        Store._peekLocalStorage() !== null);
+
+      await Store._clearIndexedDb();
+      await Store.load();
+      idb = await Store._peekIndexedDb();
+      check("IndexedDB healed from localStorage", Store.getSessions().length === 2 &&
+        idb && Object.keys(idb.sessions).length === 2);
+
+      const csv = Store.exportCsv({ smith_incline: "Smith Incline Press" });
+      check("csv e1rm computed", csv.split("\n")[1].endsWith("80.0"));
+
+      const summary = Store.importJson({ sessions: {
+        "2026-07-16_day3": sampleSession("2026-07-16_day3", "2026-07-16", 3),
+      }}, false);
+      check("import dry run reports 1 added", summary.added === 1);
+
+      log("\n" + pass + " passed, " + fail + " failed", fail === 0 ? "pass" : "fail");
+    };
+
+    document.getElementById("seed").onclick = async () => {
+      clear();
+      await Store.saveSession(sampleSession("2026-07-14_day1", "2026-07-14", 1));
+      await Store.saveSession(sampleSession("2026-07-15_day2", "2026-07-15", 2));
+      log("Seeded 2 sessions to both stores. Now clear one store and reload.", "info");
+    };
+
+    document.getElementById("clearLs").onclick = async () => {
+      await Store._clearLocalStorage();
+      log("localStorage cleared. Reloading...", "info");
+      setTimeout(() => location.reload(), 400);
+    };
+
+    document.getElementById("clearIdb").onclick = async () => {
+      await Store._clearIndexedDb();
+      log("IndexedDB cleared. Reloading...", "info");
+      setTimeout(() => location.reload(), 400);
+    };
+
+    document.getElementById("wipe").onclick = async () => {
+      await Store._clearLocalStorage();
+      await Store._clearIndexedDb();
+      log("Both stores wiped.", "info");
+    };
+  </script>
+</body>
+</html>
