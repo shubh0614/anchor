@@ -52,6 +52,19 @@ async function boot() {
   updateNag();
 
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+  requestPersistentStorage();
+}
+
+// Ask the browser to mark storage durable so it is not auto-evicted under
+// storage pressure or the iOS "not opened in a week" rule. Installed home
+// screen apps are usually granted this. It does not stop a manual wipe.
+async function requestPersistentStorage() {
+  try {
+    if (navigator.storage && navigator.storage.persist) {
+      const already = navigator.storage.persisted ? await navigator.storage.persisted() : false;
+      if (!already) await navigator.storage.persist();
+    }
+  } catch (e) { /* best effort */ }
 }
 
 function buildExerciseIndex() {
