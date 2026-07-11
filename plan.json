@@ -1,0 +1,145 @@
+{
+  "planVersion": "v5",
+  "planName": "6-Day Apartment Gym",
+  "restDay": "MON",
+  "days": [
+    {
+      "dayId": 1,
+      "weekday": "TUE",
+      "title": "PUSH A",
+      "subtitle": "Upper Chest",
+      "blocks": [
+        { "type": "anchor", "restSeconds": 150, "exercises": [
+          { "id": "smith_incline", "name": "Smith Incline Press", "sets": 4, "repMin": 6, "repMax": 10, "increment": 2.5, "note": "Priority anchor" }
+        ]},
+        { "type": "superset", "restSeconds": 90, "exercises": [
+          { "id": "incline_machine_press", "name": "Chest Press Machine (incline angle)", "sets": 3, "repMin": 8, "repMax": 12, "increment": 2.5 },
+          { "id": "leg_extension", "name": "Leg Extension", "sets": 3, "repMin": 12, "repMax": 15, "increment": 5 }
+        ]},
+        { "type": "superset", "restSeconds": 90, "exercises": [
+          { "id": "pec_deck", "name": "Pec Deck Fly", "sets": 3, "repMin": 12, "repMax": 15, "increment": 5 },
+          { "id": "db_lateral_raise", "name": "DB Lateral Raise", "sets": 3, "repMin": 12, "repMax": 20, "increment": 2.5 }
+        ]},
+        { "type": "superset", "restSeconds": 90, "exercises": [
+          { "id": "overhead_cable_tricep", "name": "Overhead Cable Tricep Extension", "sets": 3, "repMin": 10, "repMax": 15, "increment": 2.5 },
+          { "id": "cable_crunch", "name": "Cable Crunch", "sets": 3, "repMin": 12, "repMax": 15, "increment": 5 }
+        ]}
+      ]
+    },
+    {
+      "dayId": 2,
+      "weekday": "WED",
+      "title": "PULL A",
+      "subtitle": "Back Width",
+      "blocks": [
+        { "type": "anchor", "restSeconds": 150, "exercises": [
+          { "id": "lat_pulldown_wide", "name": "Lat Pulldown, wide", "sets": 3, "repMin": 6, "repMax": 10, "increment": 5 }
+        ]},
+        { "type": "superset", "restSeconds": 90, "exercises": [
+          { "id": "close_grip_row", "name": "Close-Grip Row", "sets": 3, "repMin": 8, "repMax": 12, "increment": 5 },
+          { "id": "leg_raise", "name": "Hanging / Lying Leg Raise", "sets": 3, "repMin": 12, "repMax": 15, "increment": 0 }
+        ]},
+        { "type": "superset", "restSeconds": 90, "exercises": [
+          { "id": "rear_delt_pec_deck", "name": "Rear Delt Pec Deck", "sets": 3, "repMin": 15, "repMax": 20, "increment": 5 },
+          { "id": "db_lateral_raise", "name": "DB Lateral Raise", "sets": 3, "repMin": 12, "repMax": 20, "increment": 2.5 }
+        ]},
+        { "type": "superset", "restSeconds": 90, "exercises": [
+          { "id": "ez_bar_curl", "name": "EZ Bar Curl", "sets": 3, "repMin": 8, "repMax": 12, "increment": 2.5 },
+          { "id": "overhead_cable_tricep", "name": "Overhead Cable Tricep Extension", "sets": 3, "repMin": 10, "repMax": 15, "increment": 2.5 }
+        ]}
+      ]
+    },
+    {
+      "dayId": 3,
+      "weekday": "THU",
+      "title": "PUSH B",
+      "subtitle": "Shoulders",
+      "blocks": [
+        { "type": "anchor", "restSeconds": 150, "exercises": [
+          { "id": "shoulder_press_machine", "name": "Shoulder Press Machine", "sets": 4, "repMin": 6, "repMax": 10, "increment": 5, "note": "Priority anchor" }
+        ]},
+        { "type": "superset", "restSeconds": 90, "exercises": [
+          { "id": "cable_lateral_raise", "name": "Cable Lateral Raise", "sets": 3, "repMin": 12, "repMax": 15, "increment": 2.5 },
+          { "id": "incline_machine_press", "name": "Chest Press Machine (incline angle)", "sets": 3, "repMin": 8, "repMax": 12, "increment": 2.5 }
+        ]},
+        { "type": "superset", "restSeconds": 90, "exercises": [
+          { "id": "barbell_rdl", "name": "Barbell RDL", "sets": 3, "repMin": 8, "repMax": 12, "increment": 5 },
+          { "id": "ez_skullcrusher", "name": "EZ Bar Skullcrusher", "sets": 3, "repMin": 8, "repMax": 12, "increment": 2.5, "note": "Lying. No core bracing after RDLs." }
+        ]},
+        { "type": "superset", "restSeconds": 90, "exercises": [
+          { "id": "rear_delt_cable_fly", "name": "Rear Delt Cable Fly", "sets": 3, "repMin": 15, "repMax": 20, "increment": 2.5 },
+          { "id": "lying_leg_raise", "name": "Lying Leg Raise", "sets": 3, "repMin": 12, "repMax": 15, "increment": 0 }
+        ]}
+      ]
+    },
+    {
+      "dayId": 4,
+      "weekday": "FRI",
+      "title": "PULL B",
+      "subtitle": "Back Thickness + Arms",
+      "blocks": [
+        { "type": "anchor", "restSeconds": 150, "exercises": [
+          { "id": "barbell_row", "name": "Barbell Row", "sets": 3, "repMin": 6, "repMax": 10, "increment": 2.5, "note": "2 RIR. Strict. Torso 45 deg." }
+        ]},
+        { "type": "superset", "restSeconds": 90, "exercises": [
+          { "id": "seated_row_wide", "name": "Seated Row, wide grip", "sets": 3, "repMin": 10, "repMax": 12, "increment": 5 },
+          { "id": "reverse_pec_deck", "name": "Reverse Pec Deck", "sets": 3, "repMin": 15, "repMax": 20, "increment": 5 }
+        ]},
+        { "type": "superset", "restSeconds": 90, "exercises": [
+          { "id": "incline_db_curl", "name": "Incline DB Curl", "sets": 3, "repMin": 10, "repMax": 12, "increment": 2.5 },
+          { "id": "db_lateral_raise", "name": "DB Lateral Raise", "sets": 3, "repMin": 12, "repMax": 20, "increment": 2.5 }
+        ]},
+        { "type": "superset", "restSeconds": 90, "exercises": [
+          { "id": "cable_crunch", "name": "Cable Crunch", "sets": 3, "repMin": 12, "repMax": 15, "increment": 5 },
+          { "id": "reverse_barbell_curl", "name": "Reverse Barbell Curl", "sets": 3, "repMin": 12, "repMax": 15, "increment": 2.5 }
+        ]}
+      ]
+    },
+    {
+      "dayId": 5,
+      "weekday": "SAT",
+      "title": "PUSH C",
+      "subtitle": "Chest + Shoulders",
+      "blocks": [
+        { "type": "anchor", "restSeconds": 150, "exercises": [
+          { "id": "smith_bench", "name": "Smith Bench Press", "sets": 3, "repMin": 8, "repMax": 12, "increment": 2.5, "note": "Smith catches are your spotter" }
+        ]},
+        { "type": "single", "restSeconds": 120, "exercises": [
+          { "id": "smith_hip_thrust", "name": "Smith Hip Thrust", "sets": 3, "repMin": 10, "repMax": 15, "increment": 5, "note": "Do it now. Bar and bench are still yours." }
+        ]},
+        { "type": "superset", "restSeconds": 90, "exercises": [
+          { "id": "machine_shoulder_press", "name": "Machine Shoulder Press", "sets": 3, "repMin": 8, "repMax": 12, "increment": 5 },
+          { "id": "leg_extension", "name": "Leg Extension", "sets": 3, "repMin": 15, "repMax": 20, "increment": 5 }
+        ]},
+        { "type": "triset", "restSeconds": 90, "exercises": [
+          { "id": "low_to_high_fly", "name": "Low-to-High Cable Fly", "sets": 3, "repMin": 12, "repMax": 15, "increment": 2.5 },
+          { "id": "db_lateral_raise", "name": "DB Lateral Raise", "sets": 3, "repMin": 15, "repMax": 20, "increment": 2.5 },
+          { "id": "cable_pushdown", "name": "Cable Tricep Pushdown", "sets": 3, "repMin": 12, "repMax": 15, "increment": 2.5 }
+        ]}
+      ]
+    },
+    {
+      "dayId": 6,
+      "weekday": "SUN",
+      "title": "PULL C",
+      "subtitle": "Back + Rear Delts + Arms",
+      "blocks": [
+        { "type": "anchor", "restSeconds": 150, "exercises": [
+          { "id": "lat_pulldown_neutral", "name": "Lat Pulldown, neutral", "sets": 3, "repMin": 8, "repMax": 12, "increment": 5 }
+        ]},
+        { "type": "superset", "restSeconds": 90, "exercises": [
+          { "id": "seated_row_close", "name": "Seated Row, close grip", "sets": 3, "repMin": 10, "repMax": 15, "increment": 5 },
+          { "id": "cable_crunch", "name": "Cable Crunch", "sets": 3, "repMin": 12, "repMax": 15, "increment": 5 }
+        ]},
+        { "type": "superset", "restSeconds": 90, "exercises": [
+          { "id": "face_pull", "name": "Cable Face Pull", "sets": 3, "repMin": 15, "repMax": 20, "increment": 2.5 },
+          { "id": "zottman_curl", "name": "Zottman Curl", "sets": 3, "repMin": 10, "repMax": 12, "increment": 2.5 }
+        ]},
+        { "type": "superset", "restSeconds": 90, "exercises": [
+          { "id": "db_hammer_curl", "name": "DB Hammer Curl", "sets": 3, "repMin": 10, "repMax": 15, "increment": 2.5 },
+          { "id": "smith_calf_raise", "name": "Smith Calf Raise", "sets": 3, "repMin": 15, "repMax": 20, "increment": 5 }
+        ]}
+      ]
+    }
+  ]
+}

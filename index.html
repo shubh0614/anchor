@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0E1014" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Anchor" />
+  <title>Anchor</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Space+Grotesk:wght@600&family=Inter:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Backup nag lives above everything. Non dismissible when active. -->
+  <div id="nag" class="nag" hidden></div>
+
+  <header class="appbar">
+    <button id="brand" class="brand" type="button" aria-label="Today">
+      <span class="brand-mark">ANCHOR</span>
+    </button>
+    <nav class="nav" aria-label="Views">
+      <button class="nav-btn" data-view="today" type="button">Today</button>
+      <button class="nav-btn" data-view="week" type="button">Week</button>
+      <button class="nav-btn" data-view="body" type="button">Body</button>
+    </nav>
+    <button id="export" class="icon-btn" type="button" aria-label="Export backup">Export</button>
+  </header>
+
+  <main id="app" class="app" aria-live="polite"></main>
+
+  <!-- Rest timer, pinned to the bottom edge. Hidden until a set is committed. -->
+  <div id="rest" class="rest" hidden role="timer" aria-label="Rest timer">
+    <div id="restFill" class="rest-fill"></div>
+    <div class="rest-body">
+      <span id="restLabel" class="rest-label">Rest</span>
+      <span id="restTime" class="rest-time">0:00</span>
+    </div>
+  </div>
+
+  <!-- Toast for durability messages like "Restored from backup." -->
+  <div id="toast" class="toast" hidden></div>
+
+  <!-- Hidden file input for import. -->
+  <input id="importFile" type="file" accept="application/json,.json" hidden />
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
