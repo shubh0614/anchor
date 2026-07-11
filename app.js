@@ -231,7 +231,7 @@ function renderToday() {
       <span class="daytype-tag ${dt}">${dt} day</span>
       <h1 class="day-title">${esc(activeDay.title)}</h1>
       <p class="day-sub">${esc(activeDay.subtitle)} &middot; ${esc(activeDay.weekday)}</p>
-      <div class="day-meta">${esc(plan.planName)} &middot; ${esc(plan.planVersion)}${week ? " &middot; week " + week : ""}</div>
+      ${week ? `<div class="day-meta">week ${week}</div>` : ""}
     </div>
   `);
   app.appendChild(head);
@@ -796,7 +796,7 @@ function renderPlan() {
   app.innerHTML = "";
   const r = plan.rules || {};
   const week = currentBlockWeek();
-  app.appendChild(el(`<div class="day-head"><h1 class="day-title">Plan</h1><p class="day-sub">${esc(plan.planName)} &middot; ${esc(plan.planVersion)}</p></div>`));
+  app.appendChild(el(`<div class="day-head"><h1 class="day-title">Plan</h1></div>`));
 
   // 1. this week
   const rule = scheduleRuleForWeek(week);
