@@ -23,6 +23,10 @@ function emptyDb() {
     bodyweight: [],      // [{ date, kg }]
     measurements: [],    // [{ date, waistCm, armCm, chestCm, shoulderCm }]
     settings: { sound: false, vibrate: true, units: "kg" },
+    // meta holds derived-cycle state that is not a log: the block start date
+    // (drives the week counter, resettable without touching logs) and a record
+    // of scheduled decisions the user has acknowledged (e.g. week4_laterals).
+    meta: { blockStartDate: null, reviewed: {} },
     lastExportAt: 0,
     updatedAt: 0,
   };
@@ -229,6 +233,41 @@ const Store = {
     return this.db.lastExportAt || 0;
   },
 
+  // The date the current training block started. If never set explicitly, it is
+  // the date of the earliest logged session. Null when there is no data at all.
+  getBlockStartDate() {
+    if (this.db.meta && this.db.meta.blockStartDate) return this.db.meta.blockStartDate;
+    const sessions = this.getSessions();
+    return sessions.length ? sessions[0].date : null;
+  },
+
+  // Block week number: week = floor(daysSince / 7) + 1, minimum 1. Null when
+  // there is no start date yet (nothing logged, no block started).
+  getBlockWeek(todayIso) {
+    const start = this.getBlockStartDate();
+    if (!start) return null;
+    const ms = dateFromIso(todayIso).getTime() - dateFromIso(start).getTime();
+    const days = Math.floor(ms / (24 * 60 * 60 * 1000));
+    return Math.max(1, Math.floor(days / 7) + 1);
+  },
+
+  async startNewBlock(todayIso) {
+    return this.commit((db) => {
+      db.meta.blockStartDate = todayIso;
+      db.meta.reviewed = {}; // a new block clears prior acknowledgements
+    });
+  },
+
+  isReviewed(key) {
+    return Boolean(this.db.meta && this.db.meta.reviewed && this.db.meta.reviewed[key]);
+  },
+
+  async markReviewed(key) {
+    return this.commit((db) => {
+      db.meta.reviewed[key] = true;
+    });
+  },
+
   // Write helpers --------------------------------------------------------
 
   async saveSession(session) {
@@ -330,6 +369,10 @@ const Store = {
       db.bodyweight.sort((a, b) => (a.date < b.date ? -1 : 1));
       db.measurements.sort((a, b) => (a.date < b.date ? -1 : 1));
       if (incoming.settings) db.settings = Object.assign({}, db.settings, incoming.settings);
+      if (incoming.meta) {
+        if (incoming.meta.blockStartDate && !db.meta.blockStartDate) db.meta.blockStartDate = incoming.meta.blockStartDate;
+        db.meta.reviewed = Object.assign({}, db.meta.reviewed, incoming.meta.reviewed || {});
+      }
       if (incoming.lastExportAt) db.lastExportAt = Math.max(db.lastExportAt || 0, incoming.lastExportAt);
     }).then(() => summary);
   },
@@ -364,6 +407,8 @@ function mergeDefaults(db) {
   const base = emptyDb();
   const out = Object.assign(base, db);
   out.settings = Object.assign(base.settings, db.settings || {});
+  out.meta = Object.assign(base.meta, db.meta || {});
+  out.meta.reviewed = Object.assign({}, (db.meta && db.meta.reviewed) || {});
   return out;
 }
 
@@ -379,6 +424,12 @@ function mergeByDate(target, incoming) {
 
 function e1rmOf(weight, reps) {
   return weight * (1 + reps / 30);
+}
+
+// Parse a YYYY-MM-DD string as a local date (no timezone drift).
+function dateFromIso(iso) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d);
 }
 
 function csvCell(value) {
