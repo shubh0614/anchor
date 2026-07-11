@@ -73,7 +73,7 @@ If v6 of the program renames "Smith Incline Press" to "Smith Incline Press (30 d
 - Vanilla HTML, CSS, and JavaScript (ES modules). **No build step. No framework. No bundler.**
 - Rationale: GitHub Pages serves static files, the app must open in under a second on a phone, and it must still work in five years without a dependency graveyard.
 - Charts: hand rolled inline SVG. Do not pull in a charting library for two line charts.
-- PWA: `manifest.json` plus a service worker that caches the shell so the app works with no signal. Apartment gym basements have no signal.
+- PWA: `manifest.json` plus a service worker that caches the shell so the app works with no signal. Gym basements have no signal.
 - Fonts: self host or use Google Fonts with a `preconnect`. If offline font loading is a problem, self host the woff2 files.
 
 ---
@@ -85,7 +85,7 @@ If v6 of the program renames "Smith Incline Press" to "Smith Incline Press (30 d
 ```json
 {
   "planVersion": "v5",
-  "planName": "6-Day Apartment Gym",
+  "planName": "6-Day Gym",
   "restDay": "MON",
   "days": [
     {
@@ -465,7 +465,7 @@ This is the starting plan. Ship it as `plan.json`.
 ```json
 {
   "planVersion": "v5",
-  "planName": "6-Day Apartment Gym",
+  "planName": "6-Day Gym",
   "restDay": "MON",
   "days": [
     {

@@ -1,5 +1,5 @@
 // sw.js
-// Cache the shell so the app works with no signal. Apartment gym basements
+// Cache the shell so the app works with no signal. Gym basements
 // have no signal. Bump CACHE when any shell file changes.
 
 const CACHE = "anchor-v1";
