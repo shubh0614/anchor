@@ -23,24 +23,39 @@
     <button id="brand" class="brand" type="button" aria-label="Today">
       <span class="brand-mark">ANCHOR</span>
     </button>
-    <nav class="nav" aria-label="Views">
-      <button class="nav-btn" data-view="today" type="button">Today</button>
-      <button class="nav-btn" data-view="week" type="button">Week</button>
-      <button class="nav-btn" data-view="body" type="button">Body</button>
-    </nav>
     <button id="export" class="icon-btn" type="button" aria-label="Export backup">Export</button>
   </header>
 
   <main id="app" class="app" aria-live="polite"></main>
 
-  <!-- Rest timer, pinned to the bottom edge. Hidden until a set is committed. -->
+  <!-- Rest timer, pinned above the bottom nav. Hidden until a set is committed. -->
   <div id="rest" class="rest" hidden role="timer" aria-label="Rest timer">
     <div id="restFill" class="rest-fill"></div>
     <div class="rest-body">
       <span id="restLabel" class="rest-label">Rest</span>
-      <span id="restTime" class="rest-time">0:00</span>
+      <span id="restTime" class="rest-time num">0:00</span>
     </div>
   </div>
+
+  <!-- Bottom navigation: four items, never coloured. -->
+  <nav class="botnav" aria-label="Main">
+    <button data-view="today" type="button" aria-current="true">
+      <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13l4-4 4 4 4-6 4 5"/><path d="M4 19h16"/></svg>
+      Today
+    </button>
+    <button data-view="calendar" type="button">
+      <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M8 3.5v3M16 3.5v3"/></svg>
+      Calendar
+    </button>
+    <button data-view="history" type="button">
+      <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 15l5-4 4 3 7-7"/></svg>
+      History
+    </button>
+    <button data-view="plan" type="button">
+      <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h9l4 4v12H6z"/><path d="M9 12h7M9 16h7M9 8h3"/></svg>
+      Plan
+    </button>
+  </nav>
 
   <!-- Toast for durability messages like "Restored from backup." -->
   <div id="toast" class="toast" hidden></div>
