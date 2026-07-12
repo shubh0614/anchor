@@ -542,6 +542,11 @@ function renderDetail(exerciseId) {
   toggle.querySelectorAll(".toggle").forEach((b) => { b.onclick = () => { state.chartMode = b.dataset.mode; render(); }; });
   app.appendChild(toggle);
 
+  const caption = state.chartMode === "e1rm"
+    ? "e1RM: estimated one rep max, worked out from the weight and reps you logged."
+    : "Volume load: total weight moved, weight times reps added up across all sets.";
+  app.appendChild(el(`<p class="chart-caption mono">${esc(caption)}</p>`));
+
   const cols = el(`<div class="history-cols"></div>`);
   const values = series.map((p) => state.chartMode === "e1rm" ? p.e1rm : p.volume);
   const pbs = series.map((p) => state.chartMode === "e1rm" ? p.pb : false);

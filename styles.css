@@ -260,6 +260,7 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 .toggle-row { display: flex; gap: 6px; margin: 12px 0; }
 .toggle { background: var(--surface-2); border: 1px solid var(--line); color: var(--steel); border-radius: 8px; padding: 8px 12px; min-height: 40px; font-size: 13px; }
 .toggle[aria-pressed="true"] { color: var(--bone); border-color: var(--dim); }
+.chart-caption { font-size: 11px; color: var(--dim); margin: -6px 4px 12px; line-height: 1.4; }
 
 /* cues + watch form on detail page */
 .cues { list-style: none; padding: 0; margin: 6px 0 14px; }
