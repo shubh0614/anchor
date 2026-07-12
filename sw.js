@@ -2,7 +2,7 @@
 // Cache the shell so the app works with no signal. Gym basements
 // have no signal. Bump CACHE when any shell file changes.
 
-const CACHE = "anchor-v3";
+const CACHE = "anchor-v4";
 const SHELL = [
   "./",
   "./index.html",
@@ -29,31 +29,21 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// Network first for plan.json so a pushed plan swap is picked up when online,
-// falling back to cache offline. Cache first for everything else in the shell.
+// Network first for our own files, cache fallback when offline. This means a
+// pushed fix (layout, plan, logic) always reaches the phone the next time it is
+// online, instead of a stale cached copy sticking around. Cross origin requests
+// (Google Fonts) are left untouched and go straight to the network.
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
-
-  if (url.pathname.endsWith("plan.json")) {
-    event.respondWith(
-      fetch(req).then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(req, copy));
-        return res;
-      }).catch(() => caches.match(req))
-    );
-    return;
-  }
+  if (url.origin !== location.origin) return; // fonts and other hosts pass through
 
   event.respondWith(
-    caches.match(req).then((cached) => cached || fetch(req).then((res) => {
-      if (url.origin === location.origin) {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(req, copy));
-      }
+    fetch(req).then((res) => {
+      const copy = res.clone();
+      caches.open(CACHE).then((c) => c.put(req, copy));
       return res;
-    }).catch(() => cached))
+    }).catch(() => caches.match(req).then((cached) => cached || caches.match("./index.html")))
   );
 });
