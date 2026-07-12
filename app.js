@@ -619,7 +619,6 @@ function renderCalendar() {
     const rowThu = addDays(gridStart, w * 7 + 3);
     const rowWeek = Store.getBlockWeek(todayISO(rowThu));
     const rowDeload = rowWeek != null && isDeloadWeek(rowWeek);
-    if (rowDeload) grid.appendChild(el(`<div class="deload-band"></div>`));
     let anyInMonth = false;
     const cells = [];
     for (let di = 0; di < 7; di++) {
@@ -627,10 +626,13 @@ function renderCalendar() {
       const iso = todayISO(cur);
       const inMonth = cur.getMonth() === state.calMonth;
       if (inMonth) anyInMonth = true;
-      cells.push(buildCalCell(cur, iso, inMonth, todayStr, rowDeload));
+      cells.push(buildCalCell(cur, iso, inMonth, todayStr));
     }
     if (w >= 4 && !anyInMonth) break;
-    cells.forEach((c) => grid.appendChild(c));
+    if (rowDeload) grid.appendChild(el(`<div class="deload-label">deload</div>`));
+    const week = el(`<div class="cal-week ${rowDeload ? "deload" : ""}"></div>`);
+    cells.forEach((c) => week.appendChild(c));
+    grid.appendChild(week);
   }
   app.appendChild(grid);
 
@@ -639,7 +641,7 @@ function renderCalendar() {
   app.appendChild(heatStrip());
 }
 
-function buildCalCell(cur, iso, inMonth, todayStr, rowDeload) {
+function buildCalCell(cur, iso, inMonth, todayStr) {
   const dayNum = cur.getDate();
   if (!inMonth) return el(`<div class="cal-cell empty"></div>`);
   const info = planInfoForDate(iso);

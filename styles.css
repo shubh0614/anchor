@@ -167,9 +167,10 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
   max-width: var(--maxw); margin: 0 auto;
 }
 .botnav button {
-  flex: 1; background: none; border: 0; color: var(--steel);
+  flex: 1 1 0; min-width: 0; background: none; border: 0; color: var(--steel);
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
   font-size: 10px; letter-spacing: 0.04em; min-height: var(--nav-h);
+  overflow: hidden; white-space: nowrap;
 }
 .botnav button .ic { width: 22px; height: 22px; display: block; }
 .botnav button[aria-current="true"] { color: var(--bone); }
@@ -260,11 +261,20 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 .cal-head { display: flex; align-items: center; justify-content: space-between; margin: 6px 2px 10px; }
 .cal-head .mlabel { font-family: var(--display); font-size: 18px; }
 .cal-head button { background: var(--surface-2); border: 1px solid var(--line); color: var(--bone); border-radius: 8px; width: var(--tap); height: 40px; font-size: 16px; }
-.cal-dow { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 6px; }
+.cal-dow { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; margin-bottom: 6px; }
 .cal-dow span { text-align: center; font-family: var(--mono); font-size: 10px; color: var(--dim); }
-.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-.cal-week { display: contents; }
-.cal-cell { position: relative; aspect-ratio: 1 / 1; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 13px; border: 1px solid transparent; }
+/* Each week is its own clean 7 column grid. A full width spanning child would
+   disrupt auto placement and blow the grid wider than the screen, so the deload
+   band is a background on the week row instead. */
+.cal-grid { display: flex; flex-direction: column; gap: 5px; }
+.cal-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; }
+.cal-week.deload { background: var(--surface-2); border-radius: 8px; }
+.deload-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); padding: 4px 4px 0; }
+/* min-width:0 lets the square cells shrink to their 1fr track instead of
+   forcing the grid wider than the screen (aspect-ratio + default min-width). */
+/* Fixed height, not aspect-ratio: in a grid row aspect-ratio can resolve from
+   the row height and drive the cell width past its column, overflowing the page. */
+.cal-cell { position: relative; min-width: 0; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 13px; border: 1px solid transparent; }
 .cal-cell.empty { background: none; }
 .cal-cell.rest { background: var(--surface-2); color: var(--dim); }
 .cal-cell.push-logged { background: var(--push); color: var(--ink); font-weight: 600; }
@@ -275,8 +285,6 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 .cal-cell.today { box-shadow: 0 0 0 2px var(--bone); }
 .cal-cell .pr-dot { position: absolute; top: 3px; right: 4px; width: 6px; height: 6px; border-radius: 50%; background: var(--signal); }
 .cal-cell.tappable { cursor: pointer; }
-.deload-band { grid-column: 1 / -1; height: 0; position: relative; }
-.cal-row-deload { background: var(--surface-2); border-radius: 8px; }
 
 .heatstrip { display: flex; gap: 2px; margin-top: 8px; align-items: flex-end; height: 34px; }
 .heatstrip .col { flex: 1; border-radius: 2px; background: var(--bone); min-width: 2px; }
