@@ -283,9 +283,9 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
    forcing the grid wider than the screen (aspect-ratio + default min-width). */
 /* Fixed height, not aspect-ratio: in a grid row aspect-ratio can resolve from
    the row height and drive the cell width past its column, overflowing the page. */
-.cal-cell { position: relative; min-width: 0; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 13px; border: 1px solid transparent; }
-.cal-cell.empty { background: none; }
-.cal-cell.rest { background: var(--surface-2); color: var(--dim); }
+.cal-cell { position: relative; min-width: 0; height: 44px; padding: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 13px; border: 1px solid transparent; }
+.cal-cell.blank { background: none; }
+.cal-cell.restday { background: var(--surface-2); color: var(--dim); }
 .cal-cell.push-logged { background: var(--push); color: var(--ink); font-weight: 600; }
 .cal-cell.pull-logged { background: var(--pull); color: var(--ink); font-weight: 600; }
 .cal-cell.scheduled-push { border-color: var(--push-dim); color: var(--steel); }

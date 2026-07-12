@@ -647,12 +647,12 @@ function renderCalendar() {
 
 function buildCalCell(cur, iso, inMonth, todayStr) {
   const dayNum = cur.getDate();
-  if (!inMonth) return el(`<div class="cal-cell empty"></div>`);
+  if (!inMonth) return el(`<div class="cal-cell blank"></div>`);
   const info = planInfoForDate(iso);
   let cls = "cal-cell";
   const past = iso < todayStr;
   if (isLogged(info.session)) { cls += info.dayType === "push" ? " push-logged" : " pull-logged"; }
-  else if (!info.scheduledDay) { cls += " rest"; }
+  else if (!info.scheduledDay) { cls += " restday"; }
   else if (past) { cls += " missed"; }
   else { cls += info.scheduledDay.dayType === "push" ? " scheduled-push" : " scheduled-pull"; }
   if (iso === todayStr) cls += " today";

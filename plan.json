@@ -1,32 +1,139 @@
 {
-  "planVersion": "v5",
-  "planName": "6-Day Gym",
+  "planVersion": "v6",
+  "planName": "6-Day Apartment Gym",
   "restDay": "MON",
   "rules": {
     "howToRun": [
-      { "title": "Anchor first", "body": "The anchor lift comes first, straight sets, 2 to 3 minutes rest, never supersetted. Priority anchors get 4 sets, everything else gets 3." },
-      { "title": "Progression", "body": "Same weight across all sets. Hit the top of the rep range on every set and the app adds weight for you next session. That is the whole system." },
-      { "title": "Effort", "body": "1 to 2 reps in reserve. Take 0 RIR only on the last set of an isolation. Never on a barbell." },
-      { "title": "Supersets", "body": "A1, 30 seconds, B1, 90 seconds, repeat." },
-      { "title": "Time", "body": "50 to 55 minutes. Push days are the long ones. Log while resting, never after." }
+      {
+        "title": "Anchor first",
+        "body": "The anchor lift comes first, straight sets, 2 to 3 minutes rest, never supersetted. Priority anchors get 4 sets, everything else gets 3."
+      },
+      {
+        "title": "Progression",
+        "body": "Same weight across all sets. Hit the top of the rep range on every set and the app adds weight for you next session. That is the whole system."
+      },
+      {
+        "title": "Effort",
+        "body": "1 to 2 reps in reserve. Take 0 RIR only on the last set of an isolation. Never on a barbell."
+      },
+      {
+        "title": "Supersets",
+        "body": "A1, 30 seconds, B1, 90 seconds, repeat."
+      },
+      {
+        "title": "Time",
+        "body": "50 to 55 minutes. Push days are the long ones. Log while resting, never after."
+      }
     ],
     "priorities": {
-      "priority":   [["Upper chest","13","3x"],["Shoulder press","7","2x"],["Side delts","15","5x"],["Rear delts","12","4x"],["Biceps","12","4x"],["Triceps","12","4x"],["Abs","15","5x"]],
-      "secondary":  [["Back","18","3x"]],
-      "maintenance":[["Mid / flat chest","6","2x"],["Quads","6","2x"],["Hams / glutes","6","2x"],["Calves","3","1x"],["Forearms","3","1x"]]
+      "priority": [
+        [
+          "Upper chest",
+          "13",
+          "3x"
+        ],
+        [
+          "Shoulder press",
+          "7",
+          "2x"
+        ],
+        [
+          "Side delts",
+          "15",
+          "5x"
+        ],
+        [
+          "Rear delts",
+          "12",
+          "4x"
+        ],
+        [
+          "Biceps",
+          "12",
+          "4x"
+        ],
+        [
+          "Triceps",
+          "12",
+          "4x"
+        ],
+        [
+          "Abs",
+          "15",
+          "5x"
+        ]
+      ],
+      "secondary": [
+        [
+          "Back (lats 9, mid-back 11)",
+          "20",
+          "3x"
+        ]
+      ],
+      "maintenance": [
+        [
+          "Mid / flat chest",
+          "6",
+          "2x"
+        ],
+        [
+          "Quads",
+          "6",
+          "2x"
+        ],
+        [
+          "Hams / glutes",
+          "6",
+          "2x"
+        ],
+        [
+          "Calves",
+          "3",
+          "1x"
+        ],
+        [
+          "Forearms",
+          "3",
+          "1x"
+        ]
+      ]
     },
     "pressureValves": [
       "Cut the Day 2 lateral raise. Side delts drop to 12 sets, still 4x.",
-      "Cut the Day 6 seated row.",
+      "Cut the Day 4 wide seated row.",
       "Drop a priority anchor from 4 sets to 3."
     ],
     "schedule": [
-      { "weeks": [1, 2],  "kind": "ramp",   "title": "Ramp weeks",
-        "body": "70 to 75 percent of what you think you can lift. Stop 2 to 3 reps short on everything. Non-negotiable. Week 3 you push." },
-      { "weeks": [4],     "kind": "review", "title": "Lateral raise review", "reviewKey": "week4_laterals", "reviewExerciseId": "db_lateral_raise",
-        "body": "Check your lateral raise logs. If reps have stalled, elbows feel crunchy, or your shoulder aches on presses, cut the Day 2 lateral raise now. Do not wait for pain to become injury." },
-      { "weeks": [6, 12, 18, 24], "kind": "deload", "title": "Deload week",
-        "body": "Half the sets. 3 to 4 RIR. Same exercises. One week, then build back." }
+      {
+        "weeks": [
+          1,
+          2
+        ],
+        "kind": "ramp",
+        "title": "Ramp weeks",
+        "body": "70 to 75 percent of what you think you can lift. Stop 2 to 3 reps short on everything. Non-negotiable. Week 3 you push."
+      },
+      {
+        "weeks": [
+          4
+        ],
+        "kind": "review",
+        "title": "Lateral raise review",
+        "reviewKey": "week4_laterals",
+        "reviewExerciseId": "db_lateral_raise",
+        "body": "Check your lateral raise logs. If reps have stalled, elbows feel crunchy, or your shoulder aches on presses, cut the Day 2 lateral raise now. Do not wait for pain to become injury."
+      },
+      {
+        "weeks": [
+          6,
+          12,
+          18,
+          24
+        ],
+        "kind": "deload",
+        "title": "Deload week",
+        "body": "Half the sets. 3 to 4 RIR. Same exercises. One week, then build back."
+      }
     ],
     "measurements": {
       "bodyweight": "weekly",
@@ -43,23 +150,129 @@
       "title": "PUSH A",
       "subtitle": "Upper Chest",
       "blocks": [
-        { "type": "anchor", "restSeconds": 150, "exercises": [
-          { "id": "smith_incline", "name": "Smith Incline Press", "sets": 4, "repMin": 6, "repMax": 10, "increment": 2.5, "note": "Priority anchor",
-            "video": null,
-            "cues": ["Bench at 30 degrees, not 45", "Elbows tucked to about 45 degrees", "Bar to upper chest, controlled negative"] }
-        ]},
-        { "type": "superset", "restSeconds": 90, "exercises": [
-          { "id": "incline_machine_press", "name": "Chest Press Machine (incline angle)", "sets": 3, "repMin": 8, "repMax": 12, "increment": 2.5, "video": null, "cues": ["Seat so handles meet upper chest", "Drive up and slightly in", "Full stretch at the bottom"] },
-          { "id": "leg_extension", "name": "Leg Extension", "sets": 3, "repMin": 12, "repMax": 15, "increment": 5, "video": null, "cues": ["Toes slightly in", "Pause and squeeze at the top", "Control the negative"] }
-        ]},
-        { "type": "superset", "restSeconds": 90, "exercises": [
-          { "id": "pec_deck", "name": "Pec Deck Fly", "sets": 3, "repMin": 12, "repMax": 15, "increment": 5, "video": null, "cues": ["Slight elbow bend, hold it", "Squeeze from the elbows", "Stop short of full stretch"] },
-          { "id": "db_lateral_raise", "name": "DB Lateral Raise", "sets": 3, "repMin": 12, "repMax": 20, "increment": 2.5, "video": null, "cues": ["Lead with the elbows", "Slight forward lean", "Stop at shoulder height"] }
-        ]},
-        { "type": "superset", "restSeconds": 90, "exercises": [
-          { "id": "overhead_cable_tricep", "name": "Overhead Cable Tricep Extension", "sets": 3, "repMin": 10, "repMax": 15, "increment": 2.5, "video": null, "cues": ["Elbows high and still", "Full lockout", "Feel the long head stretch"] },
-          { "id": "cable_crunch", "name": "Cable Crunch", "sets": 3, "repMin": 12, "repMax": 15, "increment": 5, "video": null, "cues": ["Round the spine, hips fixed", "Crunch with the abs, not the arms", "Exhale hard at the bottom"] }
-        ]}
+        {
+          "type": "anchor",
+          "restSeconds": 150,
+          "exercises": [
+            {
+              "id": "smith_incline",
+              "name": "Smith Incline Press",
+              "sets": 4,
+              "repMin": 6,
+              "repMax": 10,
+              "increment": 2.5,
+              "note": "Priority anchor. Needs 1.25 kg micro plates.",
+              "video": null,
+              "cues": [
+                "Bench at 30 degrees, not 45",
+                "Elbows tucked to about 45 degrees",
+                "Bar to upper chest, controlled negative"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "superset",
+          "restSeconds": 90,
+          "exercises": [
+            {
+              "id": "incline_machine_press",
+              "name": "Chest Press Machine (incline angle)",
+              "sets": 3,
+              "repMin": 8,
+              "repMax": 12,
+              "increment": 2.5,
+              "video": null,
+              "cues": [
+                "Seat so handles meet upper chest",
+                "Drive up and slightly in",
+                "Full stretch at the bottom"
+              ]
+            },
+            {
+              "id": "leg_extension",
+              "name": "Leg Extension",
+              "sets": 3,
+              "repMin": 12,
+              "repMax": 15,
+              "increment": 5,
+              "video": null,
+              "cues": [
+                "Toes slightly in",
+                "Pause and squeeze at the top",
+                "Control the negative"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "superset",
+          "restSeconds": 90,
+          "exercises": [
+            {
+              "id": "pec_deck",
+              "name": "Pec Deck Fly",
+              "sets": 3,
+              "repMin": 12,
+              "repMax": 15,
+              "increment": 5,
+              "video": null,
+              "cues": [
+                "Slight elbow bend, hold it",
+                "Squeeze from the elbows",
+                "Stop short of full stretch"
+              ]
+            },
+            {
+              "id": "db_lateral_raise",
+              "name": "DB Lateral Raise",
+              "sets": 3,
+              "repMin": 12,
+              "repMax": 20,
+              "increment": 2.5,
+              "video": null,
+              "cues": [
+                "Lead with the elbows",
+                "Slight forward lean",
+                "Stop at shoulder height"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "superset",
+          "restSeconds": 90,
+          "exercises": [
+            {
+              "id": "overhead_cable_tricep",
+              "name": "Overhead Cable Tricep Extension",
+              "sets": 3,
+              "repMin": 10,
+              "repMax": 15,
+              "increment": 2.5,
+              "video": null,
+              "cues": [
+                "Elbows high and still",
+                "Full lockout",
+                "Feel the long head stretch"
+              ]
+            },
+            {
+              "id": "cable_crunch",
+              "name": "Cable Crunch",
+              "sets": 3,
+              "repMin": 12,
+              "repMax": 15,
+              "increment": 5,
+              "video": null,
+              "cues": [
+                "Round the spine, hips fixed",
+                "Crunch with the abs, not the arms",
+                "Exhale hard at the bottom"
+              ]
+            }
+          ]
+        }
       ]
     },
     {
@@ -69,21 +282,129 @@
       "title": "PULL A",
       "subtitle": "Back Width",
       "blocks": [
-        { "type": "anchor", "restSeconds": 150, "exercises": [
-          { "id": "lat_pulldown_wide", "name": "Lat Pulldown, wide", "sets": 3, "repMin": 6, "repMax": 10, "increment": 5, "video": null, "cues": ["Chest tall, slight lean back", "Drive elbows down and back", "Full stretch at the top"] }
-        ]},
-        { "type": "superset", "restSeconds": 90, "exercises": [
-          { "id": "close_grip_row", "name": "Close-Grip Row", "sets": 3, "repMin": 8, "repMax": 12, "increment": 5, "video": null, "cues": ["Chest against the pad", "Row to the belly", "Squeeze the shoulder blades"] },
-          { "id": "leg_raise", "name": "Hanging / Lying Leg Raise", "sets": 3, "repMin": 12, "repMax": 15, "increment": 0, "video": null, "cues": ["Posterior tilt at the top", "Control the descent", "No swinging"] }
-        ]},
-        { "type": "superset", "restSeconds": 90, "exercises": [
-          { "id": "rear_delt_pec_deck", "name": "Rear Delt Pec Deck", "sets": 3, "repMin": 15, "repMax": 20, "increment": 5, "video": null, "cues": ["Slight elbow bend", "Lead with the pinkies", "Squeeze the rear delts"] },
-          { "id": "db_lateral_raise", "name": "DB Lateral Raise", "sets": 3, "repMin": 12, "repMax": 20, "increment": 2.5, "video": null, "cues": ["Lead with the elbows", "Slight forward lean", "Stop at shoulder height"] }
-        ]},
-        { "type": "superset", "restSeconds": 90, "exercises": [
-          { "id": "ez_bar_curl", "name": "EZ Bar Curl", "sets": 3, "repMin": 8, "repMax": 12, "increment": 2.5, "video": null, "cues": ["Elbows pinned to the sides", "No swinging", "Full squeeze at the top"] },
-          { "id": "overhead_cable_tricep", "name": "Overhead Cable Tricep Extension", "sets": 3, "repMin": 10, "repMax": 15, "increment": 2.5, "video": null, "cues": ["Elbows high and still", "Full lockout", "Feel the long head stretch"] }
-        ]}
+        {
+          "type": "anchor",
+          "restSeconds": 150,
+          "exercises": [
+            {
+              "id": "lat_pulldown_wide",
+              "name": "Lat Pulldown, wide",
+              "sets": 3,
+              "repMin": 6,
+              "repMax": 10,
+              "increment": 5,
+              "video": null,
+              "cues": [
+                "Chest tall, slight lean back",
+                "Drive elbows down and back",
+                "Full stretch at the top"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "superset",
+          "restSeconds": 90,
+          "exercises": [
+            {
+              "id": "close_grip_row",
+              "name": "Close-Grip Row",
+              "sets": 4,
+              "repMin": 8,
+              "repMax": 12,
+              "increment": 5,
+              "video": null,
+              "cues": [
+                "Chest against the pad",
+                "Row to the belly",
+                "Squeeze the shoulder blades"
+              ]
+            },
+            {
+              "id": "abs_circuit",
+              "name": "Abs Circuit (leg raise / toes to heaven / dragon flag)",
+              "sets": 3,
+              "repMin": 1,
+              "repMax": 1,
+              "increment": 0,
+              "note": "7 leg raises, 7 toes to heaven, 7 second dragon flag hold. One round = one set.",
+              "video": null,
+              "cues": [
+                "Ribs pulled down, lower back flat",
+                "If the back arches, stop. That is spine, not abs",
+                "Dragon flag: slow negatives first, then chase the hold"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "superset",
+          "restSeconds": 90,
+          "exercises": [
+            {
+              "id": "rear_delt_fly_machine",
+              "name": "Rear Delt Fly Machine",
+              "sets": 3,
+              "repMin": 15,
+              "repMax": 20,
+              "increment": 5,
+              "video": null,
+              "cues": [
+                "Chest on the pad, slight elbow bend",
+                "Lead with the pinkies, sweep back",
+                "Light. Feel it, do not move it"
+              ]
+            },
+            {
+              "id": "db_lateral_raise",
+              "name": "DB Lateral Raise",
+              "sets": 3,
+              "repMin": 12,
+              "repMax": 20,
+              "increment": 2.5,
+              "video": null,
+              "cues": [
+                "Lead with the elbows",
+                "Slight forward lean",
+                "Stop at shoulder height"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "superset",
+          "restSeconds": 90,
+          "exercises": [
+            {
+              "id": "ez_bar_curl",
+              "name": "EZ Bar Curl",
+              "sets": 3,
+              "repMin": 8,
+              "repMax": 12,
+              "increment": 2.5,
+              "video": null,
+              "cues": [
+                "Elbows pinned to the sides",
+                "No swinging",
+                "Full squeeze at the top"
+              ]
+            },
+            {
+              "id": "overhead_cable_tricep",
+              "name": "Overhead Cable Tricep Extension",
+              "sets": 3,
+              "repMin": 10,
+              "repMax": 15,
+              "increment": 2.5,
+              "video": null,
+              "cues": [
+                "Elbows high and still",
+                "Full lockout",
+                "Feel the long head stretch"
+              ]
+            }
+          ]
+        }
       ]
     },
     {
@@ -93,21 +414,131 @@
       "title": "PUSH B",
       "subtitle": "Shoulders",
       "blocks": [
-        { "type": "anchor", "restSeconds": 150, "exercises": [
-          { "id": "shoulder_press_machine", "name": "Shoulder Press Machine", "sets": 4, "repMin": 6, "repMax": 10, "increment": 5, "note": "Priority anchor", "video": null, "cues": ["Seat so handles sit at shoulder height", "Press without shrugging", "Stop just short of lockout"] }
-        ]},
-        { "type": "superset", "restSeconds": 90, "exercises": [
-          { "id": "cable_lateral_raise", "name": "Cable Lateral Raise", "sets": 3, "repMin": 12, "repMax": 15, "increment": 2.5, "video": null, "cues": ["Cable behind the back", "Lead with the elbow", "Constant tension, no rest at the bottom"] },
-          { "id": "incline_machine_press", "name": "Chest Press Machine (incline angle)", "sets": 3, "repMin": 8, "repMax": 12, "increment": 2.5, "video": null, "cues": ["Seat so handles meet upper chest", "Drive up and slightly in", "Full stretch at the bottom"] }
-        ]},
-        { "type": "superset", "restSeconds": 90, "exercises": [
-          { "id": "barbell_rdl", "name": "Barbell RDL", "sets": 3, "repMin": 8, "repMax": 12, "increment": 5, "video": null, "cues": ["Hinge at the hips", "Bar close to the legs", "Flat back, feel the hamstring stretch"] },
-          { "id": "ez_skullcrusher", "name": "EZ Bar Skullcrusher", "sets": 3, "repMin": 8, "repMax": 12, "increment": 2.5, "note": "Lying. No core bracing after RDLs.", "video": null, "cues": ["Only the forearms move", "Lower to the forehead", "Do not flare the elbows"] }
-        ]},
-        { "type": "superset", "restSeconds": 90, "exercises": [
-          { "id": "rear_delt_cable_fly", "name": "Rear Delt Cable Fly", "sets": 3, "repMin": 15, "repMax": 20, "increment": 2.5, "video": null, "cues": ["Arms wide, slight bend", "Lead with the pinkies", "Squeeze and control back"] },
-          { "id": "lying_leg_raise", "name": "Lying Leg Raise", "sets": 3, "repMin": 12, "repMax": 15, "increment": 0, "video": null, "cues": ["Press the low back down", "Raise legs to vertical", "Slow negative"] }
-        ]}
+        {
+          "type": "anchor",
+          "restSeconds": 150,
+          "exercises": [
+            {
+              "id": "shoulder_press_machine",
+              "name": "Shoulder Press Machine",
+              "sets": 4,
+              "repMin": 6,
+              "repMax": 10,
+              "increment": 5,
+              "note": "Priority anchor",
+              "video": null,
+              "cues": [
+                "Seat so handles sit at shoulder height",
+                "Press without shrugging",
+                "Stop just short of lockout"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "superset",
+          "restSeconds": 90,
+          "exercises": [
+            {
+              "id": "cable_lateral_raise",
+              "name": "Cable Lateral Raise",
+              "sets": 3,
+              "repMin": 12,
+              "repMax": 15,
+              "increment": 2.5,
+              "video": null,
+              "cues": [
+                "Cable behind the back",
+                "Lead with the elbow",
+                "Constant tension, no rest at the bottom"
+              ]
+            },
+            {
+              "id": "incline_machine_press",
+              "name": "Chest Press Machine (incline angle)",
+              "sets": 3,
+              "repMin": 8,
+              "repMax": 12,
+              "increment": 2.5,
+              "video": null,
+              "cues": [
+                "Seat so handles meet upper chest",
+                "Drive up and slightly in",
+                "Full stretch at the bottom"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "superset",
+          "restSeconds": 90,
+          "exercises": [
+            {
+              "id": "barbell_rdl",
+              "name": "Barbell RDL",
+              "sets": 3,
+              "repMin": 8,
+              "repMax": 12,
+              "increment": 5,
+              "video": null,
+              "cues": [
+                "Hinge at the hips",
+                "Bar close to the legs",
+                "Flat back, feel the hamstring stretch"
+              ]
+            },
+            {
+              "id": "ez_skullcrusher",
+              "name": "EZ Bar Skullcrusher",
+              "sets": 3,
+              "repMin": 8,
+              "repMax": 12,
+              "increment": 2.5,
+              "note": "Lying. No core bracing after RDLs.",
+              "video": null,
+              "cues": [
+                "Only the forearms move",
+                "Lower to the forehead",
+                "Do not flare the elbows"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "superset",
+          "restSeconds": 90,
+          "exercises": [
+            {
+              "id": "rear_delt_cable_fly",
+              "name": "Rear Delt Cable Fly",
+              "sets": 3,
+              "repMin": 15,
+              "repMax": 20,
+              "increment": 2.5,
+              "video": null,
+              "cues": [
+                "Arms wide, slight bend",
+                "Lead with the pinkies",
+                "Squeeze and control back"
+              ]
+            },
+            {
+              "id": "abs_circuit",
+              "name": "Abs Circuit (leg raise / toes to heaven / dragon flag)",
+              "sets": 3,
+              "repMin": 1,
+              "repMax": 1,
+              "increment": 0,
+              "note": "7 leg raises, 7 toes to heaven, 7 second dragon flag hold. One round = one set.",
+              "video": null,
+              "cues": [
+                "Ribs pulled down, lower back flat",
+                "If the back arches, stop. That is spine, not abs",
+                "Dragon flag: slow negatives first, then chase the hold"
+              ]
+            }
+          ]
+        }
       ]
     },
     {
@@ -117,21 +548,129 @@
       "title": "PULL B",
       "subtitle": "Back Thickness + Arms",
       "blocks": [
-        { "type": "anchor", "restSeconds": 150, "exercises": [
-          { "id": "barbell_row", "name": "Barbell Row", "sets": 3, "repMin": 6, "repMax": 10, "increment": 2.5, "note": "2 RIR. Strict. Torso 45 deg.", "video": null, "cues": ["Torso about 45 degrees", "Row to the lower ribs", "Strict, 2 reps in reserve"] }
-        ]},
-        { "type": "superset", "restSeconds": 90, "exercises": [
-          { "id": "seated_row_wide", "name": "Seated Row, wide grip", "sets": 3, "repMin": 10, "repMax": 12, "increment": 5, "video": null, "cues": ["Chest tall", "Elbows out and back", "Squeeze the mid back"] },
-          { "id": "reverse_pec_deck", "name": "Reverse Pec Deck", "sets": 3, "repMin": 15, "repMax": 20, "increment": 5, "video": null, "cues": ["Slight elbow bend", "Lead with the pinkies", "Squeeze the rear delts"] }
-        ]},
-        { "type": "superset", "restSeconds": 90, "exercises": [
-          { "id": "incline_db_curl", "name": "Incline DB Curl", "sets": 3, "repMin": 10, "repMax": 12, "increment": 2.5, "video": null, "cues": ["Arms hang back on the incline", "Curl without moving the elbows", "Full stretch at the bottom"] },
-          { "id": "db_lateral_raise", "name": "DB Lateral Raise", "sets": 3, "repMin": 12, "repMax": 20, "increment": 2.5, "video": null, "cues": ["Lead with the elbows", "Slight forward lean", "Stop at shoulder height"] }
-        ]},
-        { "type": "superset", "restSeconds": 90, "exercises": [
-          { "id": "cable_crunch", "name": "Cable Crunch", "sets": 3, "repMin": 12, "repMax": 15, "increment": 5, "video": null, "cues": ["Round the spine, hips fixed", "Crunch with the abs, not the arms", "Exhale hard at the bottom"] },
-          { "id": "reverse_barbell_curl", "name": "Reverse Barbell Curl", "sets": 3, "repMin": 12, "repMax": 15, "increment": 2.5, "video": null, "cues": ["Overhand grip", "Elbows pinned", "Control the negative"] }
-        ]}
+        {
+          "type": "anchor",
+          "restSeconds": 150,
+          "exercises": [
+            {
+              "id": "barbell_row",
+              "name": "Barbell Row",
+              "sets": 4,
+              "repMin": 6,
+              "repMax": 10,
+              "increment": 2.5,
+              "note": "2 RIR. Strict. Torso 45 deg. Needs 1.25 kg micro plates.",
+              "video": null,
+              "cues": [
+                "Torso about 45 degrees",
+                "Row to the lower ribs",
+                "Strict, 2 reps in reserve"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "superset",
+          "restSeconds": 90,
+          "exercises": [
+            {
+              "id": "seated_row_wide",
+              "name": "Seated Row, wide grip",
+              "sets": 3,
+              "repMin": 10,
+              "repMax": 12,
+              "increment": 5,
+              "video": null,
+              "cues": [
+                "Chest tall",
+                "Elbows out and back",
+                "Squeeze the mid back"
+              ]
+            },
+            {
+              "id": "rear_delt_fly_machine",
+              "name": "Rear Delt Fly Machine",
+              "sets": 3,
+              "repMin": 15,
+              "repMax": 20,
+              "increment": 5,
+              "video": null,
+              "cues": [
+                "Chest on the pad, slight elbow bend",
+                "Lead with the pinkies, sweep back",
+                "Light. Feel it, do not move it"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "superset",
+          "restSeconds": 90,
+          "exercises": [
+            {
+              "id": "incline_db_curl",
+              "name": "Incline DB Curl",
+              "sets": 3,
+              "repMin": 10,
+              "repMax": 12,
+              "increment": 2.5,
+              "video": null,
+              "cues": [
+                "Arms hang back on the incline",
+                "Curl without moving the elbows",
+                "Full stretch at the bottom"
+              ]
+            },
+            {
+              "id": "db_lateral_raise",
+              "name": "DB Lateral Raise",
+              "sets": 3,
+              "repMin": 12,
+              "repMax": 20,
+              "increment": 2.5,
+              "video": null,
+              "cues": [
+                "Lead with the elbows",
+                "Slight forward lean",
+                "Stop at shoulder height"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "superset",
+          "restSeconds": 90,
+          "exercises": [
+            {
+              "id": "cable_crunch",
+              "name": "Cable Crunch",
+              "sets": 3,
+              "repMin": 12,
+              "repMax": 15,
+              "increment": 5,
+              "video": null,
+              "cues": [
+                "Round the spine, hips fixed",
+                "Crunch with the abs, not the arms",
+                "Exhale hard at the bottom"
+              ]
+            },
+            {
+              "id": "reverse_barbell_curl",
+              "name": "Reverse Barbell Curl",
+              "sets": 3,
+              "repMin": 12,
+              "repMax": 15,
+              "increment": 2.5,
+              "video": null,
+              "cues": [
+                "Overhand grip",
+                "Elbows pinned",
+                "Control the negative"
+              ]
+            }
+          ]
+        }
       ]
     },
     {
@@ -141,21 +680,130 @@
       "title": "PUSH C",
       "subtitle": "Chest + Shoulders",
       "blocks": [
-        { "type": "anchor", "restSeconds": 150, "exercises": [
-          { "id": "smith_bench", "name": "Smith Bench Press", "sets": 3, "repMin": 8, "repMax": 12, "increment": 2.5, "note": "Smith catches are your spotter", "video": null, "cues": ["Retract the shoulder blades", "Bar to the lower chest", "Drive through the mid foot"] }
-        ]},
-        { "type": "single", "restSeconds": 120, "exercises": [
-          { "id": "smith_hip_thrust", "name": "Smith Hip Thrust", "sets": 3, "repMin": 10, "repMax": 15, "increment": 5, "note": "Do it now. Bar and bench are still yours.", "video": null, "cues": ["Chin tucked, ribs down", "Drive through the heels", "Full lockout, squeeze the glutes"] }
-        ]},
-        { "type": "superset", "restSeconds": 90, "exercises": [
-          { "id": "machine_shoulder_press", "name": "Machine Shoulder Press", "sets": 3, "repMin": 8, "repMax": 12, "increment": 5, "video": null, "cues": ["Seat so handles sit at shoulder height", "Press without shrugging", "Stop short of lockout"] },
-          { "id": "leg_extension", "name": "Leg Extension", "sets": 3, "repMin": 15, "repMax": 20, "increment": 5, "video": null, "cues": ["Toes slightly in", "Pause and squeeze at the top", "Control the negative"] }
-        ]},
-        { "type": "triset", "restSeconds": 90, "exercises": [
-          { "id": "low_to_high_fly", "name": "Low-to-High Cable Fly", "sets": 3, "repMin": 12, "repMax": 15, "increment": 2.5, "video": null, "cues": ["Start low and wide", "Sweep up to eye level", "Squeeze the upper chest"] },
-          { "id": "db_lateral_raise", "name": "DB Lateral Raise", "sets": 3, "repMin": 15, "repMax": 20, "increment": 2.5, "video": null, "cues": ["Lead with the elbows", "Slight forward lean", "Stop at shoulder height"] },
-          { "id": "cable_pushdown", "name": "Cable Tricep Pushdown", "sets": 3, "repMin": 12, "repMax": 15, "increment": 2.5, "video": null, "cues": ["Elbows pinned to the sides", "Full lockout", "Control back to 90 degrees"] }
-        ]}
+        {
+          "type": "anchor",
+          "restSeconds": 150,
+          "exercises": [
+            {
+              "id": "smith_bench",
+              "name": "Smith Bench Press",
+              "sets": 3,
+              "repMin": 8,
+              "repMax": 12,
+              "increment": 2.5,
+              "note": "Smith catches are your spotter. Needs 1.25 kg micro plates.",
+              "video": null,
+              "cues": [
+                "Retract the shoulder blades",
+                "Bar to the lower chest",
+                "Drive through the mid foot"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "single",
+          "restSeconds": 120,
+          "exercises": [
+            {
+              "id": "smith_glute_bridge",
+              "name": "Smith Glute Bridge",
+              "sets": 3,
+              "repMin": 10,
+              "repMax": 15,
+              "increment": 5,
+              "note": "Do it now, the bar is still yours. Floor version, no box or bench needed.",
+              "video": null,
+              "cues": [
+                "Shoulders on the floor, bar over the hips, pad it",
+                "Drive through the heels",
+                "Chin tucked, squeeze hard at the top"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "superset",
+          "restSeconds": 90,
+          "exercises": [
+            {
+              "id": "machine_shoulder_press",
+              "name": "Machine Shoulder Press",
+              "sets": 3,
+              "repMin": 8,
+              "repMax": 12,
+              "increment": 5,
+              "video": null,
+              "cues": [
+                "Seat so handles sit at shoulder height",
+                "Press without shrugging",
+                "Stop short of lockout"
+              ]
+            },
+            {
+              "id": "leg_extension",
+              "name": "Leg Extension",
+              "sets": 3,
+              "repMin": 15,
+              "repMax": 20,
+              "increment": 5,
+              "video": null,
+              "cues": [
+                "Toes slightly in",
+                "Pause and squeeze at the top",
+                "Control the negative"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "triset",
+          "restSeconds": 90,
+          "exercises": [
+            {
+              "id": "low_to_high_fly",
+              "name": "Low-to-High Cable Fly",
+              "sets": 3,
+              "repMin": 12,
+              "repMax": 15,
+              "increment": 2.5,
+              "video": null,
+              "cues": [
+                "Start low and wide",
+                "Sweep up to eye level",
+                "Squeeze the upper chest"
+              ]
+            },
+            {
+              "id": "db_lateral_raise",
+              "name": "DB Lateral Raise",
+              "sets": 3,
+              "repMin": 15,
+              "repMax": 20,
+              "increment": 2.5,
+              "video": null,
+              "cues": [
+                "Lead with the elbows",
+                "Slight forward lean",
+                "Stop at shoulder height"
+              ]
+            },
+            {
+              "id": "cable_pushdown",
+              "name": "Cable Tricep Pushdown",
+              "sets": 3,
+              "repMin": 12,
+              "repMax": 15,
+              "increment": 2.5,
+              "video": null,
+              "cues": [
+                "Elbows pinned to the sides",
+                "Full lockout",
+                "Control back to 90 degrees"
+              ]
+            }
+          ]
+        }
       ]
     },
     {
@@ -165,21 +813,129 @@
       "title": "PULL C",
       "subtitle": "Back + Rear Delts + Arms",
       "blocks": [
-        { "type": "anchor", "restSeconds": 150, "exercises": [
-          { "id": "lat_pulldown_neutral", "name": "Lat Pulldown, neutral", "sets": 3, "repMin": 8, "repMax": 12, "increment": 5, "video": null, "cues": ["Chest tall, slight lean", "Drive elbows down", "Full stretch at the top"] }
-        ]},
-        { "type": "superset", "restSeconds": 90, "exercises": [
-          { "id": "seated_row_close", "name": "Seated Row, close grip", "sets": 3, "repMin": 10, "repMax": 15, "increment": 5, "video": null, "cues": ["Chest tall", "Row to the belly", "Squeeze the shoulder blades"] },
-          { "id": "cable_crunch", "name": "Cable Crunch", "sets": 3, "repMin": 12, "repMax": 15, "increment": 5, "video": null, "cues": ["Round the spine, hips fixed", "Crunch with the abs, not the arms", "Exhale hard at the bottom"] }
-        ]},
-        { "type": "superset", "restSeconds": 90, "exercises": [
-          { "id": "face_pull", "name": "Cable Face Pull", "sets": 3, "repMin": 15, "repMax": 20, "increment": 2.5, "video": null, "cues": ["High elbows", "Pull to the forehead", "Externally rotate at the end"] },
-          { "id": "zottman_curl", "name": "Zottman Curl", "sets": 3, "repMin": 10, "repMax": 12, "increment": 2.5, "video": null, "cues": ["Curl palms up", "Rotate to palms down at the top", "Lower slow with the reverse grip"] }
-        ]},
-        { "type": "superset", "restSeconds": 90, "exercises": [
-          { "id": "db_hammer_curl", "name": "DB Hammer Curl", "sets": 3, "repMin": 10, "repMax": 15, "increment": 2.5, "video": null, "cues": ["Neutral grip throughout", "Elbows pinned", "No swinging"] },
-          { "id": "smith_calf_raise", "name": "Smith Calf Raise", "sets": 3, "repMin": 15, "repMax": 20, "increment": 5, "video": null, "cues": ["Full stretch at the bottom", "Pause at the top", "Do not bounce"] }
-        ]}
+        {
+          "type": "anchor",
+          "restSeconds": 150,
+          "exercises": [
+            {
+              "id": "lat_pulldown_neutral",
+              "name": "Lat Pulldown, neutral",
+              "sets": 3,
+              "repMin": 8,
+              "repMax": 12,
+              "increment": 5,
+              "video": null,
+              "cues": [
+                "Chest tall, slight lean",
+                "Drive elbows down",
+                "Full stretch at the top"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "superset",
+          "restSeconds": 90,
+          "exercises": [
+            {
+              "id": "cable_pullover",
+              "name": "Cable Pullover",
+              "sets": 3,
+              "repMin": 12,
+              "repMax": 15,
+              "increment": 2.5,
+              "note": "The only lift that loads the lat at full stretch. This is what was missing.",
+              "video": null,
+              "cues": [
+                "Arms nearly straight, slight bend, hold it",
+                "Hinge slightly, let the lat lengthen overhead",
+                "Pull with the lat, not the triceps"
+              ]
+            },
+            {
+              "id": "cable_crunch",
+              "name": "Cable Crunch",
+              "sets": 3,
+              "repMin": 12,
+              "repMax": 15,
+              "increment": 5,
+              "video": null,
+              "cues": [
+                "Round the spine, hips fixed",
+                "Crunch with the abs, not the arms",
+                "Exhale hard at the bottom"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "superset",
+          "restSeconds": 90,
+          "exercises": [
+            {
+              "id": "face_pull",
+              "name": "Cable Face Pull",
+              "sets": 3,
+              "repMin": 15,
+              "repMax": 20,
+              "increment": 2.5,
+              "video": null,
+              "cues": [
+                "High elbows",
+                "Pull to the forehead",
+                "Externally rotate at the end"
+              ]
+            },
+            {
+              "id": "zottman_curl",
+              "name": "Zottman Curl",
+              "sets": 3,
+              "repMin": 10,
+              "repMax": 12,
+              "increment": 2.5,
+              "video": null,
+              "cues": [
+                "Curl palms up",
+                "Rotate to palms down at the top",
+                "Lower slow with the reverse grip"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "superset",
+          "restSeconds": 90,
+          "exercises": [
+            {
+              "id": "db_hammer_curl",
+              "name": "DB Hammer Curl",
+              "sets": 3,
+              "repMin": 10,
+              "repMax": 15,
+              "increment": 2.5,
+              "video": null,
+              "cues": [
+                "Neutral grip throughout",
+                "Elbows pinned",
+                "No swinging"
+              ]
+            },
+            {
+              "id": "smith_calf_raise",
+              "name": "Smith Calf Raise",
+              "sets": 3,
+              "repMin": 15,
+              "repMax": 20,
+              "increment": 5,
+              "video": null,
+              "cues": [
+                "Full stretch at the bottom",
+                "Pause at the top",
+                "Do not bounce"
+              ]
+            }
+          ]
+        }
       ]
     }
   ]

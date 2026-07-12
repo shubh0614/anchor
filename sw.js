@@ -2,7 +2,7 @@
 // Cache the shell so the app works with no signal. Gym basements
 // have no signal. Bump CACHE when any shell file changes.
 
-const CACHE = "anchor-v4";
+const CACHE = "anchor-v6";
 const SHELL = [
   "./",
   "./index.html",
