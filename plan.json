@@ -844,7 +844,6 @@
               "repMin": 12,
               "repMax": 15,
               "increment": 2.5,
-              "note": "The only lift that loads the lat at full stretch. This is what was missing.",
               "video": null,
               "cues": [
                 "Arms nearly straight, slight bend, hold it",

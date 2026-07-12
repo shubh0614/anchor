@@ -85,7 +85,7 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 .daytype-tag.push { color: var(--push); border: 1px solid var(--push-dim); }
 .daytype-tag.pull { color: var(--pull); border: 1px solid var(--pull-dim); }
 
-/* ---------- schedule banner ---------- */
+/* ---------- schedule reference (Plan page only) ---------- */
 
 .banner {
   border-radius: 12px; padding: 12px 14px; margin: 0 0 18px;
@@ -94,10 +94,18 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 .banner .b-tag { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 6px; color: var(--steel); }
 .banner .b-body { font-size: 13px; color: var(--bone); line-height: 1.45; }
 .banner.ramp { border-color: var(--dim); }
-.banner.deload { border-color: var(--dim); background: var(--surface-2); }
 .banner.review { border-color: var(--dim); }
-.banner .b-actions { display: flex; gap: 8px; margin-top: 10px; }
-.banner .b-actions button { min-height: 40px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); color: var(--bone); padding: 0 14px; font-size: 13px; }
+
+/* ---------- deload notice ---------- */
+/* The only thing that ever renders above the first block of a session.
+   One label, one line, no card, no icon, no buttons, no dismiss. */
+
+.deload-notice {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  padding: 0 4px; margin: 4px 0 18px;
+}
+.dn-tag { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--steel); white-space: nowrap; }
+.dn-body { font-size: 13px; color: var(--bone); }
 
 /* ---------- block card ---------- */
 
@@ -118,6 +126,8 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 .ex-note { color: var(--dim); font-size: 12px; margin: 2px 0 0; }
 .ex-last { font-family: var(--mono); font-size: 12px; color: var(--steel); margin: 6px 0 10px; }
 .ex-skip { margin-left: auto; background: none; border: 1px solid var(--line); color: var(--dim); font-size: 12px; border-radius: 8px; min-height: 34px; padding: 0 10px; }
+.ex-tools { display: flex; gap: 14px; margin: -4px 0 8px; }
+.ex-tools .link { min-height: 28px; font-size: 12px; }
 
 /* amber progression rail: only when the app says add weight */
 .exercise.progress::before { content: ""; position: absolute; left: -14px; top: -2px; bottom: -2px; width: 3px; background: var(--signal); border-radius: 2px; }
@@ -153,6 +163,18 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 .commit:active { background: var(--line); }
 .pill.committed .commit { color: var(--bone); border-color: var(--dim); }
 .pill.committed.up .commit { color: var(--signal); }
+
+/* removed sets: greyed, struck through, stay in position, restorable */
+.pill.committed.removed { opacity: 0.5; }
+.pill.committed.removed .cfield .val,
+.pill.committed.removed .cfield .unit,
+.pill.committed.removed .cfield .lbl { text-decoration: line-through; }
+.restore-btn { z-index: 1; align-self: stretch; min-height: 48px; background: none; border: 1px solid var(--line); border-radius: 10px; color: var(--steel); font-size: 11px; }
+
+.removed-list { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
+.removed-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; opacity: 0.6; }
+.removed-label { font-family: var(--mono); font-size: 12px; color: var(--steel); text-decoration: line-through; }
+.removed-row .restore-btn { min-height: 32px; padding: 0 10px; font-size: 11px; }
 
 /* ---------- rest timer (sits above the bottom nav) ---------- */
 
@@ -331,6 +353,22 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 .stepper-big { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 16px 0; }
 .stepper-big .val { font-family: var(--mono); font-size: 32px; font-weight: 600; min-width: 120px; text-align: center; }
 .stepper-big button { width: 56px; height: 56px; font-size: 26px; background: var(--surface-2); border: 1px solid var(--line); color: var(--bone); border-radius: 12px; }
+
+/* ---------- wipe all data ---------- */
+/* Plain text, not styled to tempt or scare. Real space above it, never next
+   to Export. The RESET input is the only text input in the app. */
+
+.wipe-zone { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--line); }
+.wipe-trigger { background: none; border: 0; color: var(--dim); font-size: 13px; min-height: 40px; padding: 0; }
+
+.wipe-back { position: fixed; inset: 0; z-index: 70; background: var(--ink); display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+.wipe-sheet { width: 100%; max-width: var(--maxw); }
+.wipe-sheet h2 { font-family: var(--display); font-size: 22px; margin: 0 0 16px; }
+.wipe-body { font-size: 14px; color: var(--bone); line-height: 1.6; margin: 0 0 20px; }
+.wipe-status { font-family: var(--mono); font-size: 12px; color: var(--steel); margin: 0 0 20px; }
+.wipe-input-row { margin: 0 0 20px; }
+.wipe-label { display: block; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--steel); margin-bottom: 8px; }
+#wipeConfirmInput { width: 100%; min-height: var(--tap); background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; color: var(--bone); font-family: var(--mono); font-size: 18px; padding: 0 14px; letter-spacing: 0.1em; }
 
 @media (min-width: 720px) {
   .history-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }

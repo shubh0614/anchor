@@ -26,7 +26,7 @@ function emptyDb() {
     // meta holds derived-cycle state that is not a log: the block start date
     // (drives the week counter, resettable without touching logs) and a record
     // of scheduled decisions the user has acknowledged (e.g. week4_laterals).
-    meta: { blockStartDate: null, reviewed: {} },
+    meta: { blockStartDate: null },
     lastExportAt: 0,
     updatedAt: 0,
   };
@@ -217,10 +217,12 @@ const Store = {
   getExerciseHistory(exerciseId) {
     const out = [];
     for (const s of this.getSessions()) {
+      if (s.discarded) continue;
       const entry = (s.entries || []).find((e) => e.exerciseId === exerciseId);
-      if (entry && !entry.skipped && entry.sets && entry.sets.length) {
-        out.push({ sessionId: s.sessionId, date: s.date, dayId: s.dayId, sets: entry.sets });
-      }
+      if (!entry || entry.skipped || !entry.sets) continue;
+      // Removed sets never contribute to charts or progression.
+      const live = entry.sets.filter((set) => !set.deleted);
+      if (live.length) out.push({ sessionId: s.sessionId, date: s.date, dayId: s.dayId, sets: live });
     }
     return out;
   },
@@ -237,7 +239,7 @@ const Store = {
   // the date of the earliest logged session. Null when there is no data at all.
   getBlockStartDate() {
     if (this.db.meta && this.db.meta.blockStartDate) return this.db.meta.blockStartDate;
-    const sessions = this.getSessions();
+    const sessions = this.getSessions().filter((s) => !s.discarded);
     return sessions.length ? sessions[0].date : null;
   },
 
@@ -254,17 +256,6 @@ const Store = {
   async startNewBlock(todayIso) {
     return this.commit((db) => {
       db.meta.blockStartDate = todayIso;
-      db.meta.reviewed = {}; // a new block clears prior acknowledgements
-    });
-  },
-
-  isReviewed(key) {
-    return Boolean(this.db.meta && this.db.meta.reviewed && this.db.meta.reviewed[key]);
-  },
-
-  async markReviewed(key) {
-    return this.commit((db) => {
-      db.meta.reviewed[key] = true;
     });
   },
 
@@ -279,6 +270,71 @@ const Store = {
   async updateSettings(patch) {
     return this.commit((db) => {
       db.settings = Object.assign({}, db.settings, patch);
+    });
+  },
+
+  // Soft delete, always. Nothing here removes a record from storage: an edit
+  // overwrites values in place, a remove flags deleted, a restore clears the
+  // flag. Position in the sets array never shifts, so set numbering holds.
+
+  async editSet(sessionId, exerciseId, setIndex, weight, reps) {
+    return this.commit((db) => {
+      const s = db.sessions[sessionId];
+      const entry = s && (s.entries || []).find((e) => e.exerciseId === exerciseId);
+      if (!entry || !entry.sets[setIndex]) return;
+      entry.sets[setIndex].weight = weight;
+      entry.sets[setIndex].reps = reps;
+      entry.sets[setIndex].loggedAt = Date.now();
+    });
+  },
+
+  async removeSet(sessionId, exerciseId, setIndex) {
+    return this.commit((db) => {
+      const s = db.sessions[sessionId];
+      const entry = s && (s.entries || []).find((e) => e.exerciseId === exerciseId);
+      if (!entry || !entry.sets[setIndex]) return;
+      entry.sets[setIndex].deleted = true;
+      entry.sets[setIndex].deletedAt = Date.now();
+    });
+  },
+
+  async restoreSet(sessionId, exerciseId, setIndex) {
+    return this.commit((db) => {
+      const s = db.sessions[sessionId];
+      const entry = s && (s.entries || []).find((e) => e.exerciseId === exerciseId);
+      if (!entry || !entry.sets[setIndex]) return;
+      delete entry.sets[setIndex].deleted;
+      delete entry.sets[setIndex].deletedAt;
+    });
+  },
+
+  async removeAllSets(sessionId, exerciseId) {
+    return this.commit((db) => {
+      const s = db.sessions[sessionId];
+      const entry = s && (s.entries || []).find((e) => e.exerciseId === exerciseId);
+      if (!entry) return;
+      const now = Date.now();
+      for (const set of entry.sets) {
+        if (set && !set.deleted) { set.deleted = true; set.deletedAt = now; }
+      }
+    });
+  },
+
+  async discardSession(sessionId) {
+    return this.commit((db) => {
+      const s = db.sessions[sessionId];
+      if (!s) return;
+      s.discarded = true;
+      s.discardedAt = Date.now();
+    });
+  },
+
+  async restoreSession(sessionId) {
+    return this.commit((db) => {
+      const s = db.sessions[sessionId];
+      if (!s) return;
+      delete s.discarded;
+      delete s.discardedAt;
     });
   },
 
@@ -316,10 +372,11 @@ const Store = {
     // planIndex is an optional { exerciseId: name } map for readable names.
     const rows = [["date", "dayId", "exerciseId", "exerciseName", "setNumber", "weight", "reps", "e1rm"]];
     for (const s of this.getSessions()) {
+      if (s.discarded) continue;
       for (const entry of s.entries || []) {
         if (entry.skipped) continue;
         const name = (planIndex && planIndex[entry.exerciseId]) || entry.exerciseId;
-        entry.sets.forEach((set, i) => {
+        entry.sets.filter((set) => !set.deleted).forEach((set, i) => {
           const e1rm = e1rmOf(set.weight, set.reps);
           rows.push([
             s.date,
@@ -369,12 +426,21 @@ const Store = {
       db.bodyweight.sort((a, b) => (a.date < b.date ? -1 : 1));
       db.measurements.sort((a, b) => (a.date < b.date ? -1 : 1));
       if (incoming.settings) db.settings = Object.assign({}, db.settings, incoming.settings);
-      if (incoming.meta) {
-        if (incoming.meta.blockStartDate && !db.meta.blockStartDate) db.meta.blockStartDate = incoming.meta.blockStartDate;
-        db.meta.reviewed = Object.assign({}, db.meta.reviewed, incoming.meta.reviewed || {});
+      if (incoming.meta && incoming.meta.blockStartDate && !db.meta.blockStartDate) {
+        db.meta.blockStartDate = incoming.meta.blockStartDate;
       }
       if (incoming.lastExportAt) db.lastExportAt = Math.max(db.lastExportAt || 0, incoming.lastExportAt);
     }).then(() => summary);
+  },
+
+  // The one hard delete in the app. Clears both storage layers completely and
+  // resets memory to a clean first run state. Only reachable behind the typed
+  // RESET confirmation in Wipe all data.
+  async wipeAll() {
+    localStorage.removeItem(LS_KEY);
+    await idbClear();
+    this.db = emptyDb();
+    emit({ type: "wiped" });
   },
 
   // Test / recovery hooks. Used by the storage harness to prove healing.
@@ -408,7 +474,6 @@ function mergeDefaults(db) {
   const out = Object.assign(base, db);
   out.settings = Object.assign(base.settings, db.settings || {});
   out.meta = Object.assign(base.meta, db.meta || {});
-  out.meta.reviewed = Object.assign({}, (db.meta && db.meta.reviewed) || {});
   return out;
 }
 

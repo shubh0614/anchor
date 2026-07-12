@@ -1,7 +1,6 @@
 {
   "name": "Anchor",
   "short_name": "Anchor",
-  "description": "A workout logger built for one lifter, one program, and fifty minutes.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

@@ -312,6 +312,51 @@ When the last set is logged, or the user taps `End session`:
 - **What stalled** (quiet list, no shaming language)
 - One tap back to the history view
 
+### 7.8 Editing and removing records
+
+A logged mistake must be fixable, **without ever hard deleting anything**, because law number one is that data is never lost. A wrong weight otherwise poisons the e1RM chart and makes progression prefill a weight that was never lifted.
+
+#### 7.8.1 Soft delete, always
+
+Nothing is removed from storage. A removed record is marked, not deleted.
+
+```json
+{ "weight": 70, "reps": 10, "loggedAt": 1752480180000, "deleted": true, "deletedAt": 1752480240000 }
+```
+
+A record marked `deleted: true` is excluded from charts, progression, streaks, adherence, PR detection, and the calendar amber dot. It is still written to both storage layers, still present in every export with its flag intact, and restorable in one tap forever. The only hard delete in the app is `Wipe all data`.
+
+#### 7.8.2 Three levels
+
+- **A set.** Long press a committed set pill: `Edit` reopens the steppers with the logged values, and committing overwrites in place and updates `loggedAt`. `Remove` marks it `deleted: true`.
+- **An exercise.** `Remove all sets` on the card marks every set for that exercise in this session deleted, and the card returns to its unlogged state.
+- **A session.** From the Calendar, tap a day, then `Discard session`. The cell reverts to a hollow outline, as if the session had been missed.
+
+#### 7.8.3 Restore
+
+Every session view has a quiet `Show removed` toggle that reveals deleted sets, greyed and struck through, each with a `Restore` control. A discarded session restores the same way from its calendar cell.
+
+#### 7.8.4 Progression is derived on read, never stored
+
+**Never persist an `addWeight` flag.** Compute progression, personal bests, the calendar amber dot, the streak, and adherence **every time they are needed**, from the current non-deleted sets for that `exerciseId` and `dayId`. Any edit or removal then produces the correct result automatically, because there is no stale state to update. Removing a set that earned ADD WEIGHT makes the flag vanish; restoring it brings the flag back.
+
+#### 7.8.5 Copy
+
+Neutral, always. `Remove` not `Delete`. `Discard session` not `Delete session`. `Restore` not `Undelete`. No dialogue says `This cannot be undone`, because it can be. After a removal: `Removed. Show removed to restore.`
+
+### 7.9 Wipe all data
+
+The one place data is truly destroyed. It lives at the **bottom of the Settings page**, below everything else, with real space above it. A plain text control reading `Wipe all data`, not a big red button, not styled to tempt or to scare.
+
+The sequence:
+
+1. **Tap it.** A full screen sheet states plainly what will happen (every session, set, bodyweight, measurement, and setting, from both storage layers, cannot be undone, plan file not affected).
+2. **It exports first, automatically.** A full JSON backup downloads before the wipe can proceed. The confirm path stays disabled until the download completes. **If the export fails, the wipe is blocked.** The app never destroys the only copy and then apologises.
+3. **Type to confirm.** A single text input. The user types `RESET` exactly, uppercase. No paste helper, no prefill. This is the **only text input in the entire app**, and that friction is the point.
+4. **Wipe.** Clear both localStorage and IndexedDB completely, reload to a clean first run state.
+
+Rules: never triggered by a swipe, long press, or gesture, only an explicit tap. Never next to `Export`. No dismissible `Are you sure?` that can wipe. After the wipe the app says `Data wiped.` and nothing else. The plan file is untouched.
+
 ---
 
 ## 8. History and charts
@@ -413,38 +458,25 @@ A **Plan** tab, reachable in one tap from anywhere. It is read only. It renders,
 
 No editing. The plan is a JSON file and a git push.
 
-### 8A.3 Scheduled rules are events, not reference text
+### 8A.3 The app does not coach. The deload is the only exception.
 
-This is the part that matters.
+ANCHOR is a logger. It logs. It does not remind, advise, or nag. Nothing renders above the first block of a session, ever, except the one line deload notice on a deload week.
 
-The app computes **block week number** from the date of the first ever logged session (`week = floor(daysSinceFirstSession / 7) + 1`). It then checks `rules.schedule` on every app open.
+The app computes **block week number** from the date of the first ever logged session (`week = floor(daysSinceFirstSession / 7) + 1`). This counter now exists for **one purpose only**: deciding whether this is a deload week.
 
-If the current week matches a scheduled rule, a **banner appears at the top of the session screen**, before the first block, every day of that week:
-
-```
-WEEK 1 OF 2 . RAMP
-70 to 75 percent. Stop 2 to 3 reps short. Non-negotiable.
-```
-
-```
-WEEK 4 . LATERAL RAISE REVIEW
-Check your lateral raise logs. Stalled reps, crunchy elbows, or an aching
-shoulder on presses means cut the Day 2 lateral raise now.
-                                            [ Open logs ]   [ Done ]
-```
+On a deload week (from `rules.schedule` where `kind: "deload"`, weeks 6, 12, 18, 24), show a **single quiet line** at the top of the session screen:
 
 ```
 WEEK 6 . DELOAD
-Half the sets. 3 to 4 RIR. Same exercises.
+Half the sets. 3 to 4 RIR.
 ```
 
-Behaviour:
+That is the entire banner. One label, one line. No card, no icon, no buttons, no dismiss control. It is a statement of fact, not a message.
 
-- The **ramp** and **deload** banners are informational and persist all week. They cannot be dismissed, because they change how every set in that week should be performed.
-- The **review** banner is actionable. `Open logs` jumps straight to the lateral raise history chart. `Done` dismisses it for the rest of the block and records the decision (`reviewed: week4_laterals`) in storage, so the user has a record of when they checked and what they chose.
-- During a **deload** week, the app halves the displayed target set count for every exercise (rounding down, minimum 1) and shows the target reps with a quiet `deload` tag. It does not change the plan file. It is a rendering rule.
+- During a deload week, **halve every displayed target set count**, rounding down, minimum 1. This is a rendering rule. It never modifies `plan.json`.
+- The **ramp** and **review** entries in `rules.schedule` are gone from the code entirely. No ramp banner. No week 4 review banner, no buttons, no stored `reviewed` decision. They still render as static reference text on the Plan page (8A.2), where the user can read them if they want. They never come and find the user.
 
-The user should never have to remember any of this. The app remembers.
+Nothing else interrupts, advises, or reminds. Open the app, today's session is there, log, leave.
 
 ### 8A.4 Block reset
 
@@ -669,14 +701,22 @@ The build is done when all of these are true.
 10. The rest timer starts automatically on set commit and vibrates once at zero.
 11. It works with the phone in airplane mode.
 12. It looks correct at 380px, 768px, and 1280px.
-13. The Plan page renders every rule from `plan.json`, with nothing hardcoded.
-14. On a ramp, review, or deload week, the correct banner appears on the session screen without the user going looking for it.
-15. During a deload week, every exercise shows halved target sets.
+13. The Plan page renders every rule from `plan.json` as static read only reference, with nothing hardcoded.
+14. The deload notice is the **only** thing that ever renders above the first block of a session. No ramp banner, no review banner, no reminders, no advice, anywhere in the app.
+15. During a deload week, every exercise shows halved target sets, and `plan.json` is untouched.
 16. Colour is never decorative. Amber appears only on progression, ember only on push days, teal only on pull days, violet only on body metrics. Navigation and buttons are uncoloured.
 17. The calendar shows a month at a glance, with logged push days ember, logged pull days teal, an amber dot on any day a weight went up, and Monday neutral.
 18. A missed Monday never breaks a streak.
 19. No video control appears anywhere in the logging flow. Form cues and the video link live only on the exercise detail page, reached by tapping the exercise name.
 20. There is not a single em dash anywhere in the repository.
+21. A committed set can be long pressed, edited, and re-committed, and the change is reflected in the chart and the progression state immediately.
+22. A removed set is excluded from every chart, streak, and progression calculation, but still appears in the JSON export with `deleted: true`.
+23. Removing a set that had triggered ADD WEIGHT makes that flag disappear, and restoring it brings the flag back. No stale state anywhere.
+24. A discarded session reverts its calendar cell to a hollow outline and is restorable from that cell.
+25. There is no hard delete anywhere except `Wipe all data`.
+26. `Wipe all data` downloads a full JSON backup before it will proceed, and refuses to wipe if that export fails.
+27. `Wipe all data` requires typing `RESET` exactly. This is the only text input in the app. It cannot be triggered by any gesture, swipe, or accidental tap.
+28. After a wipe, both localStorage and IndexedDB are empty and the app returns to a clean first run state, with `plan.json` untouched.
 
 ---
 

@@ -31,6 +31,8 @@ const state = {
   calYear: now.getFullYear(),
   calMonth: now.getMonth(),
   sessionDetailId: null,
+  showRemoved: false,          // reveal soft deleted sets in the session view
+  editing: null,               // { exId, rawIdx } while editing a committed set
 };
 
 const rest = { raf: 0, endsAt: 0, duration: 0, running: false, hideTimer: 0 };
@@ -50,6 +52,11 @@ async function boot() {
   activeDay = defaultDayForToday();
   render();
   updateNag();
+
+  if (sessionStorage.getItem("anchor_wiped") === "1") {
+    sessionStorage.removeItem("anchor_wiped");
+    toast("Data wiped.");
+  }
 
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
   requestPersistentStorage();
@@ -149,7 +156,7 @@ function draftFor(ex, setIndex, last, progress) {
   const key = ex.id + "::" + setIndex;
   if (drafts.has(key)) return drafts.get(key);
   const entry = entryFor(ex.id);
-  const committed = entry ? entry.sets.filter(Boolean) : [];
+  const committed = entry ? liveSets(entry.sets) : [];
   let weight, reps;
   if (committed.length > 0) {
     weight = committed[committed.length - 1].weight;
@@ -279,10 +286,10 @@ function renderToday() {
   const banner = renderBanner(week);
   if (banner) app.appendChild(banner);
 
-  const firstEver = Store.getSessions().length === 0 && activeSession.entries.every((e) => e.sets.length === 0);
-  if (firstEver) app.appendChild(el(`<p class="ex-last" style="margin:-8px 4px 16px;">No history yet. Enter your working weights and the app takes over from here.</p>`));
-
   for (const block of activeDay.blocks) app.appendChild(renderBlock(block, deload));
+
+  const firstEver = Store.getSessions().length === 0 && activeSession.entries.every((e) => e.sets.length === 0);
+  if (firstEver) app.appendChild(el(`<p class="ex-last" style="margin:2px 4px 16px;">No history yet. Enter your working weights and the app takes over from here.</p>`));
 
   app.appendChild(overrideControl());
   const end = el(`<div class="btn-row"><button class="btn" id="endBtn">End session</button></div>`);
@@ -290,33 +297,12 @@ function renderToday() {
   app.appendChild(end);
 }
 
-// Scheduled rule banner. Ramp and deload persist; review is dismissible per block.
+// The deload notice is the only thing the app ever puts above the first block.
+// One label, one line, no card, no buttons, no dismiss. A statement of fact.
+// Ramp and review are gone: they exist only as reference text on the Plan page.
 function renderBanner(week) {
-  const rule = scheduleRuleForWeek(week);
-  if (!rule) return null;
-
-  if (rule.kind === "review") {
-    if (Store.isReviewed(rule.reviewKey)) return null;
-    const b = el(`
-      <div class="banner review">
-        <div class="b-tag">week ${week} . ${esc(rule.title)}</div>
-        <div class="b-body">${esc(rule.body)}</div>
-        <div class="b-actions"><button id="rvOpen">Open logs</button><button id="rvDone">Done</button></div>
-      </div>
-    `);
-    b.querySelector("#rvOpen").onclick = () => openDetail(rule.reviewExerciseId);
-    b.querySelector("#rvDone").onclick = async () => { await Store.markReviewed(rule.reviewKey); render(); };
-    return b;
-  }
-
-  let tag;
-  if (rule.kind === "ramp") {
-    const pos = rule.weeks.indexOf(week) + 1;
-    tag = `week ${pos} of ${rule.weeks.length} . ramp`;
-  } else {
-    tag = `week ${week} . deload`;
-  }
-  return el(`<div class="banner ${rule.kind}"><div class="b-tag">${tag}</div><div class="b-body">${esc(rule.body)}</div></div>`);
+  if (!isDeloadWeek(week)) return null;
+  return el(`<div class="deload-notice"><span class="dn-tag">week ${week} . deload</span><span class="dn-body">Half the sets. 3 to 4 RIR.</span></div>`);
 }
 
 function renderBlock(block, deload) {
@@ -340,6 +326,8 @@ function renderExercise(ex, block, deload) {
   const nSets = effectiveSets(ex, deload);
   const hideWeight = ex.increment === 0;
   const hideReps = ex.repMin === ex.repMax;
+  const hasLive = entry && entry.sets.some((s) => s && !s.deleted);
+  const hasRemoved = entry && entry.sets.some((s) => s && s.deleted);
 
   const wrap = el(`<div class="exercise ${progress ? "progress" : ""} ${skipped ? "skipped" : ""}"></div>`);
   let lastLine;
@@ -359,10 +347,19 @@ function renderExercise(ex, block, deload) {
       </div>
       ${ex.note ? `<p class="ex-note">${esc(ex.note)}</p>` : ""}
       <p class="ex-last mono">${esc(lastLine)}</p>
+      ${hasLive || hasRemoved ? `<div class="ex-tools">${hasLive ? `<button class="link ex-remove-all" type="button">Remove all sets</button>` : ""}${hasRemoved ? `<button class="link ex-show-removed" type="button">${state.showRemoved ? "Hide removed" : "Show removed"}</button>` : ""}</div>` : ""}
     </div>
   `);
   head.querySelector(".ex-name").onclick = () => openDetail(ex.id);
   head.querySelector(".ex-skip").onclick = () => { if (skipped) return toggleSkip(ex.id); openSkipModal(ex.id); };
+  const removeAllBtn = head.querySelector(".ex-remove-all");
+  if (removeAllBtn) removeAllBtn.onclick = async () => {
+    await Store.removeAllSets(activeSession.sessionId, ex.id);
+    render();
+    toast("Removed. Show removed to restore.");
+  };
+  const showRemovedBtn = head.querySelector(".ex-show-removed");
+  if (showRemovedBtn) showRemovedBtn.onclick = () => { state.showRemoved = !state.showRemoved; render(); };
   wrap.appendChild(head);
 
   if (!skipped) {
@@ -381,19 +378,40 @@ function renderPill(ex, setIndex, last, progress) {
   const hideWeight = ex.increment === 0;
   const hideReps = ex.repMin === ex.repMax;
 
-  if (committedSet) {
+  if (committedSet && committedSet.deleted && state.showRemoved) {
+    const rows = [];
+    if (!hideWeight) rows.push(`<div class="cfield"><span class="val">${fmtWeight(committedSet.weight)}</span><span class="unit">kg</span></div>`);
+    if (!hideReps) rows.push(`<div class="cfield"><span class="val">${committedSet.reps}</span><span class="lbl">reps</span></div>`);
+    if (!rows.length) rows.push(`<div class="cfield"><span class="lbl">round ${setIndex + 1}</span></div>`);
+    const pill = el(`
+      <div class="pill committed removed">
+        <span class="pill-set-no">${setIndex + 1}</span>
+        <div class="pill-fields">${rows.join("")}</div>
+        <button class="restore-btn" type="button">Restore</button>
+      </div>
+    `);
+    pill.querySelector(".restore-btn").onclick = async () => {
+      await Store.restoreSet(activeSession.sessionId, ex.id, setIndex);
+      render();
+    };
+    return pill;
+  }
+
+  if (committedSet && !committedSet.deleted) {
     const up = ex.increment > 0 && committedSet.reps >= ex.repMax;
     const rows = [];
     if (!hideWeight) rows.push(`<div class="cfield"><span class="val">${fmtWeight(committedSet.weight)}</span><span class="unit">kg</span></div>`);
     if (!hideReps) rows.push(`<div class="cfield"><span class="val">${committedSet.reps}</span><span class="lbl">reps</span></div>`);
     if (!rows.length) rows.push(`<div class="cfield"><span class="lbl">round ${setIndex + 1} logged</span></div>`);
-    return el(`
+    const pill = el(`
       <div class="pill committed ${up ? "up" : ""}">
         <span class="pill-set-no">${setIndex + 1}</span><span class="sweep"></span>
         <div class="pill-fields">${rows.join("")}</div>
         <div class="commit">${up ? "&#9650;" : "&#10003;"}</div>
       </div>
     `);
+    bindLongPress(pill, () => openSetSheet(ex, setIndex, committedSet, hideWeight, hideReps));
+    return pill;
   }
 
   const d = draftFor(ex, setIndex, last, progress);
@@ -566,11 +584,15 @@ function planInfoForDate(iso) {
   const dayForType = session ? planDayById(session.dayId) : scheduledDay;
   return { scheduledDay, session, dayType: dayForType ? dayForType.dayType : null };
 }
-function isLogged(session) { return Boolean(session && session.entries.some((e) => e.sets && e.sets.length > 0)); }
+// Deleted sets and discarded sessions are excluded everywhere state is
+// derived: progression, streaks, adherence, and the calendar dot are all
+// computed fresh from live (non-deleted, non-discarded) data every time.
+function liveSets(sets) { return sets ? sets.filter((s) => s && !s.deleted) : []; }
+function isLogged(session) { return Boolean(session && !session.discarded && session.entries.some((e) => liveSets(e.sets).length > 0)); }
 function sessionCompleted(session, planDay) {
-  if (!session || !planDay) return false;
+  if (!session || !planDay || session.discarded) return false;
   const total = planDay.blocks.reduce((n, b) => n + b.exercises.length, 0);
-  const logged = session.entries.filter((e) => !e.skipped && e.sets && e.sets.length > 0).length;
+  const logged = session.entries.filter((e) => !e.skipped && liveSets(e.sets).length > 0).length;
   return logged * 2 >= total;
 }
 // Completed judged against the session's own day (its dayId), not the weekday.
@@ -579,15 +601,17 @@ function completedOn(iso) {
   return s ? sessionCompleted(s, planDayById(s.dayId)) : false;
 }
 function dayWentUp(session) {
-  if (!session) return false;
+  if (!session || session.discarded) return false;
   for (const e of session.entries) {
-    if (e.skipped || !e.sets || !e.sets.length) continue;
+    if (e.skipped) continue;
+    const live = liveSets(e.sets);
+    if (!live.length) continue;
     const ex = exerciseInDay(session.dayId, e.exerciseId) || exIndex[e.exerciseId];
-    if (ex && ex.increment > 0 && e.sets.every((s) => s.reps >= ex.repMax)) return true;
+    if (ex && ex.increment > 0 && live.every((s) => s.reps >= ex.repMax)) return true;
   }
   return false;
 }
-function earliestSessionDate() { const s = Store.getSessions(); return s.length ? s[0].date : null; }
+function earliestSessionDate() { const s = Store.getSessions().filter((x) => !x.discarded); return s.length ? s[0].date : null; }
 
 function currentStreak() {
   let streak = 0, cursor = dateFromIso(todayISO());
@@ -705,7 +729,9 @@ function buildCalCell(cur, iso, inMonth, todayStr) {
   else { cls += info.scheduledDay.dayType === "push" ? " scheduled-push" : " scheduled-pull"; }
   if (iso === todayStr) cls += " today";
   const up = dayWentUp(info.session);
-  const tappable = isLogged(info.session);
+  // A discarded session still needs a way back in, so it stays tappable even
+  // though it now renders hollow like a missed day.
+  const tappable = Boolean(info.session);
   if (tappable) cls += " tappable";
   const cell = el(`<div class="${cls}">${dayNum}${up ? `<span class="pr-dot"></span>` : ""}</div>`);
   if (tappable) cell.onclick = () => { state.view = "session-detail"; state.sessionDetailId = info.session.sessionId; render(); };
@@ -737,24 +763,56 @@ function renderSessionDetail(sessionId) {
   app.innerHTML = "";
   const s = Store.getSession(sessionId);
   const day = s ? planDayById(s.dayId) : null;
-  const head = el(`<div class="day-head"><button class="link" id="back" type="button">&larr; Back</button><h1 class="day-title" style="margin-top:6px;">${day ? esc(day.title) : "Session"}</h1><p class="day-sub">${s ? fmtDate(s.date) : ""}</p></div>`);
+  const head = el(`<div class="day-head"><button class="link" id="back" type="button">&larr; Back</button><h1 class="day-title" style="margin-top:6px;">${day ? esc(day.title) : "Session"}</h1><p class="day-sub">${s ? fmtDate(s.date) : ""}${s && s.discarded ? " . discarded" : ""}</p></div>`);
   head.querySelector("#back").onclick = () => { state.view = "calendar"; render(); };
   app.appendChild(head);
   if (!s) { app.appendChild(el(`<section class="empty"><div class="sub">Nothing logged.</div></section>`)); return; }
+
+  const hasRemoved = s.entries.some((e) => e.sets && e.sets.some((set) => set && set.deleted));
+  const tools = el(`<div class="btn-row"></div>`);
+  if (hasRemoved) {
+    const t = el(`<button class="link" type="button">${state.showRemoved ? "Hide removed" : "Show removed"}</button>`);
+    t.onclick = () => { state.showRemoved = !state.showRemoved; render(); };
+    tools.appendChild(t);
+  }
+  const discardBtn = el(`<button class="link" type="button">${s.discarded ? "Restore session" : "Discard session"}</button>`);
+  discardBtn.onclick = async () => {
+    if (s.discarded) { await Store.restoreSession(s.sessionId); toast("Restored."); }
+    else { await Store.discardSession(s.sessionId); toast("Removed. Show removed to restore."); }
+    render();
+  };
+  tools.appendChild(discardBtn);
+  app.appendChild(tools);
 
   for (const entry of s.entries) {
     const ex = exerciseInDay(s.dayId, entry.exerciseId) || exIndex[entry.exerciseId];
     const name = ex ? ex.name : entry.exerciseId;
     const hideWeight = ex && ex.increment === 0;
     const hideReps = ex && ex.repMin === ex.repMax;
-    const up = ex && ex.increment > 0 && !entry.skipped && entry.sets.length && entry.sets.every((set) => set.reps >= ex.repMax);
+    const live = liveSets(entry.sets);
+    const up = ex && ex.increment > 0 && !entry.skipped && live.length && live.every((set) => set.reps >= ex.repMax);
     let body;
     if (entry.skipped) body = `Skipped${entry.skipReason ? " (" + esc(entry.skipReason) + ")" : ""}`;
-    else if (!entry.sets.length) body = "no sets";
-    else if (hideWeight && hideReps) body = `${entry.sets.length} rounds`;
-    else if (hideWeight) body = entry.sets.map((s2) => s2.reps).join(", ") + " reps";
-    else body = entry.sets.map((s2) => `${fmtWeight(s2.weight)}x${s2.reps}`).join(", ");
-    app.appendChild(el(`<div class="block"><div class="ex-head"><span class="ex-name">${esc(name)}</span>${up ? `<span class="badge-add">ADD WEIGHT</span>` : ""}</div><span class="ex-last mono">${esc(body)}</span></div>`));
+    else if (!live.length) body = "no sets";
+    else if (hideWeight && hideReps) body = `${live.length} rounds`;
+    else if (hideWeight) body = live.map((s2) => s2.reps).join(", ") + " reps";
+    else body = live.map((s2) => `${fmtWeight(s2.weight)}x${s2.reps}`).join(", ");
+    const card = el(`<div class="block"><div class="ex-head"><span class="ex-name">${esc(name)}</span>${up ? `<span class="badge-add">ADD WEIGHT</span>` : ""}</div><span class="ex-last mono">${esc(body)}</span></div>`);
+
+    if (state.showRemoved) {
+      const removed = (entry.sets || []).map((set, i) => ({ set, i })).filter((x) => x.set && x.set.deleted);
+      if (removed.length) {
+        const rlist = el(`<div class="removed-list"></div>`);
+        removed.forEach(({ set, i }) => {
+          const label = hideWeight && hideReps ? `round ${i + 1}` : hideWeight ? `${set.reps} reps` : `${fmtWeight(set.weight)}x${set.reps}`;
+          const row = el(`<div class="removed-row"><span class="removed-label">${esc(label)}</span><button class="restore-btn" type="button">Restore</button></div>`);
+          row.querySelector(".restore-btn").onclick = async () => { await Store.restoreSet(s.sessionId, entry.exerciseId, i); render(); };
+          rlist.appendChild(row);
+        });
+        card.appendChild(rlist);
+      }
+    }
+    app.appendChild(card);
   }
 }
 
@@ -799,13 +857,70 @@ function renderHistory() {
         <button class="toggle" id="tVibrate" aria-pressed="${s.vibrate !== false}">Vibrate at zero</button>
       </div>
       <div class="btn-row"><button class="btn" id="exp2">Export backup</button><button class="btn" id="imp2">Import backup</button></div>
+      <div class="wipe-zone"><button class="wipe-trigger" id="wipeAll" type="button">Wipe all data</button></div>
     </div>
   `);
   data.querySelector("#tSound").onclick = async (e) => { const on = e.currentTarget.getAttribute("aria-pressed") !== "true"; e.currentTarget.setAttribute("aria-pressed", String(on)); await Store.updateSettings({ sound: on }); };
   data.querySelector("#tVibrate").onclick = async (e) => { const on = e.currentTarget.getAttribute("aria-pressed") !== "true"; e.currentTarget.setAttribute("aria-pressed", String(on)); await Store.updateSettings({ vibrate: on }); };
   data.querySelector("#exp2").onclick = doExport;
   data.querySelector("#imp2").onclick = openImport;
+  data.querySelector("#wipeAll").onclick = openWipeSheet;
   app.appendChild(data);
+}
+
+// ---------- wipe all data ----------
+// The one hard delete in the app. Explicit tap only, never a gesture. Forces
+// a backup download before it will even accept input, and refuses to
+// continue if that backup fails. RESET typed exactly is the only text input
+// anywhere in ANCHOR, on purpose: typing is friction, and here friction is
+// the point.
+
+function openWipeSheet() {
+  const m = el(`
+    <div class="wipe-back">
+      <div class="wipe-sheet">
+        <h2>Wipe all data</h2>
+        <p class="wipe-body">This removes every session, every set, all bodyweight and measurement records, and all settings. From both storage layers. It cannot be undone. Your plan file is not affected.</p>
+        <p class="wipe-status">Saving backup&hellip;</p>
+        <div class="wipe-input-row" hidden>
+          <label class="wipe-label" for="wipeConfirmInput">Type RESET to continue</label>
+          <input type="text" id="wipeConfirmInput" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
+        </div>
+        <div class="btn-row">
+          <button class="btn" id="wipeCancel" type="button">Cancel</button>
+          <button class="btn" id="wipeConfirm" type="button" disabled>Wipe all data</button>
+        </div>
+      </div>
+    </div>
+  `);
+  document.body.appendChild(m);
+  const statusEl = m.querySelector(".wipe-status");
+  const inputRow = m.querySelector(".wipe-input-row");
+  const input = m.querySelector("#wipeConfirmInput");
+  const confirmBtn = m.querySelector("#wipeConfirm");
+  m.querySelector("#wipeCancel").onclick = () => m.remove();
+
+  let backedUp = false;
+  try {
+    const filename = `anchor-backup-${todayISO()}.json`;
+    download(filename, JSON.stringify(Store.exportJson(), null, 2), "application/json");
+    backedUp = true;
+    statusEl.textContent = `Backup saved: ${filename}`;
+    inputRow.hidden = false;
+    input.focus();
+  } catch (err) {
+    statusEl.textContent = "Backup failed. Wipe blocked.";
+  }
+
+  if (backedUp) {
+    input.oninput = () => { confirmBtn.disabled = input.value !== "RESET"; };
+  }
+  confirmBtn.onclick = async () => {
+    if (confirmBtn.disabled) return;
+    await Store.wipeAll();
+    sessionStorage.setItem("anchor_wiped", "1");
+    location.reload();
+  };
 }
 
 function renderBodySection() {
@@ -949,6 +1064,63 @@ function openBlockReset() {
   const back = openModal(m);
   m.querySelector("#no").onclick = () => back.remove();
   m.querySelector("#go").onclick = async () => { back.remove(); await Store.startNewBlock(todayISO()); render(); toast("New block started."); };
+}
+
+// A long hold on a committed pill opens edit/remove. Timer based, cancels on
+// release or when the pointer leaves so a normal tap never triggers it.
+function bindLongPress(node, fn) {
+  let timer = null;
+  const start = () => { timer = setTimeout(() => { timer = null; fn(); }, 500); };
+  const cancel = () => { if (timer) { clearTimeout(timer); timer = null; } };
+  node.addEventListener("pointerdown", start);
+  node.addEventListener("pointerup", cancel);
+  node.addEventListener("pointerleave", cancel);
+  node.addEventListener("pointercancel", cancel);
+  node.addEventListener("contextmenu", (e) => e.preventDefault());
+}
+
+function openSetSheet(ex, setIndex, set, hideWeight, hideReps) {
+  const m = el(`<div class="modal"><h2>Set ${setIndex + 1}</h2><div class="btn-row"><button class="btn" id="editBtn">Edit</button><button class="btn" id="removeBtn">Remove</button></div></div>`);
+  const back = openModal(m);
+  m.querySelector("#editBtn").onclick = () => { back.remove(); openEditSetModal(ex, setIndex, set, hideWeight, hideReps); };
+  m.querySelector("#removeBtn").onclick = async () => {
+    back.remove();
+    await Store.removeSet(activeSession.sessionId, ex.id, setIndex);
+    render();
+    toast("Removed. Show removed to restore.");
+  };
+}
+
+function openEditSetModal(ex, setIndex, set, hideWeight, hideReps) {
+  let weight = set.weight, reps = set.reps;
+  const rows = [];
+  if (!hideWeight) rows.push(`
+    <div class="stepper" data-axis="weight">
+      <button class="step-btn" data-dir="-1" aria-label="decrease weight">&minus;</button>
+      <div class="field"><span class="val mono w-val">${fmtWeight(weight)}</span><span class="unit">kg</span></div>
+      <button class="step-btn" data-dir="1" aria-label="increase weight">+</button>
+    </div>`);
+  if (!hideReps) rows.push(`
+    <div class="stepper" data-axis="reps">
+      <button class="step-btn" data-dir="-1" aria-label="decrease reps">&minus;</button>
+      <div class="field"><span class="val mono r-val">${reps}</span><span class="lbl">reps</span></div>
+      <button class="step-btn" data-dir="1" aria-label="increase reps">+</button>
+    </div>`);
+  const m = el(`<div class="modal"><h2>Edit set ${setIndex + 1}</h2>${rows.join("")}<div class="btn-row"><button class="btn" id="save">Save</button><button class="btn" id="cancel">Cancel</button></div></div>`);
+  const back = openModal(m);
+  const wVal = m.querySelector(".w-val"), rVal = m.querySelector(".r-val");
+  if (wVal) m.querySelectorAll('.stepper[data-axis="weight"] .step-btn').forEach((btn) => {
+    btn.onclick = () => { weight = Math.max(0, +(weight + Number(btn.dataset.dir) * ex.increment).toFixed(2)); wVal.textContent = fmtWeight(weight); };
+  });
+  if (rVal) m.querySelectorAll('.stepper[data-axis="reps"] .step-btn').forEach((btn) => {
+    btn.onclick = () => { reps = Math.max(0, reps + Number(btn.dataset.dir)); rVal.textContent = reps; };
+  });
+  m.querySelector("#cancel").onclick = () => back.remove();
+  m.querySelector("#save").onclick = async () => {
+    back.remove();
+    await Store.editSet(activeSession.sessionId, ex.id, setIndex, weight, reps);
+    render();
+  };
 }
 function openStepperModal(title, initial, step, unit, onSave) {
   let val = initial;
