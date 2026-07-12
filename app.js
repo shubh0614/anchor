@@ -113,12 +113,36 @@ function effectiveSets(ex, deload) { return deload ? Math.max(1, Math.floor(ex.s
 
 // ---------- history + progression ----------
 
-function lastSessionFor(exerciseId) {
-  const hist = Store.getExerciseHistory(exerciseId).filter((h) => !activeSession || h.sessionId !== activeSession.sessionId);
+// The same exercise id can appear on several days with different rep targets and
+// set counts (Day 1 leg extension is 12-15, Day 5 is 15-20). So the exercise
+// definition for progression and prefill must come from the specific day, and
+// the "last session" must be filtered to the same dayId. History is still stored
+// and charted by exercise id, so the chart stays unified across days.
+function exerciseInDay(dayId, exerciseId) {
+  const day = planDayById(dayId);
+  if (!day) return null;
+  for (const block of day.blocks) {
+    const ex = block.exercises.find((e) => e.id === exerciseId);
+    if (ex) return ex;
+  }
+  return null;
+}
+
+// Most recent prior session of this exercise ON THE SAME DAY. Prefill and
+// progression key off this so Saturday's leg extension never inherits Tuesday's.
+function lastSessionFor(exerciseId, dayId) {
+  const hist = Store.getExerciseHistory(exerciseId).filter((h) =>
+    (dayId == null || h.dayId === dayId) && (!activeSession || h.sessionId !== activeSession.sessionId)
+  );
   return hist.length ? hist[hist.length - 1] : null;
 }
 function topWeight(sets) { return sets.reduce((m, s) => Math.max(m, s.weight), 0); }
-function shouldProgress(ex, last) { return last && last.sets.length ? last.sets.every((s) => s.reps >= ex.repMax) : false; }
+// Progression evaluates against the current block's repMax. Never for bodyweight
+// exercises (increment 0): they get harder, not heavier.
+function shouldProgress(ex, last) {
+  if (ex.increment === 0) return false;
+  return last && last.sets.length ? last.sets.every((s) => s.reps >= ex.repMax) : false;
+}
 function entryFor(exerciseId) { return activeSession ? activeSession.entries.find((e) => e.exerciseId === exerciseId) || null : null; }
 
 function draftFor(ex, setIndex, last, progress) {
@@ -139,6 +163,9 @@ function draftFor(ex, setIndex, last, progress) {
   } else {
     weight = ex.increment > 0 ? FIRST_TIME_WEIGHT : 0; reps = ex.repMin;
   }
+  // Locked axes: bodyweight has no weight, a single-value rep target is fixed.
+  if (ex.increment === 0) weight = 0;
+  if (ex.repMin === ex.repMax) reps = ex.repMin;
   const d = { weight, reps };
   drafts.set(key, d);
   return d;
@@ -164,7 +191,7 @@ function ensureEntry(exerciseId) {
 
 async function commitSet(ex, setIndex) {
   const key = ex.id + "::" + setIndex;
-  const d = drafts.get(key) || draftFor(ex, setIndex, lastSessionFor(ex.id), false);
+  const d = drafts.get(key) || draftFor(ex, setIndex, lastSessionFor(ex.id, activeDay.dayId), false);
   ensureSession(activeDay.dayId);
   const entry = ensureEntry(ex.id);
   entry.skipped = false;
@@ -307,19 +334,26 @@ function renderBlock(block, deload) {
 
 function renderExercise(ex, block, deload) {
   const entry = entryFor(ex.id);
-  const last = lastSessionFor(ex.id);
+  const last = lastSessionFor(ex.id, activeDay.dayId);
   const progress = shouldProgress(ex, last);
   const skipped = entry && entry.skipped;
   const nSets = effectiveSets(ex, deload);
+  const hideWeight = ex.increment === 0;
+  const hideReps = ex.repMin === ex.repMax;
 
   const wrap = el(`<div class="exercise ${progress ? "progress" : ""} ${skipped ? "skipped" : ""}"></div>`);
-  const lastLine = last ? `Last: ${fmtWeight(topWeight(last.sets))} kg x ${last.sets.map((s) => s.reps).join(", ")}` : "Last: none yet";
+  let lastLine;
+  if (!last) lastLine = "Last: none yet";
+  else if (hideWeight && hideReps) lastLine = `Last: ${last.sets.length} rounds`;
+  else if (hideWeight) lastLine = `Last: ${last.sets.map((s) => s.reps).join(", ")} reps`;
+  else lastLine = `Last: ${fmtWeight(topWeight(last.sets))} kg x ${last.sets.map((s) => s.reps).join(", ")}`;
+  const target = hideReps ? `${nSets} sets` : `${nSets} x ${ex.repMin}-${ex.repMax}`;
 
   const head = el(`
     <div>
       <div class="ex-head">
         <button class="ex-name" type="button">${esc(ex.name)}</button>
-        <span class="ex-target mono">${nSets} x ${ex.repMin}-${ex.repMax}${deload ? `<span class="deload-tag">deload</span>` : ""}</span>
+        <span class="ex-target mono">${target}${deload ? `<span class="deload-tag">deload</span>` : ""}</span>
         ${progress ? `<span class="badge-add">ADD WEIGHT</span>` : ""}
         <button class="ex-skip" type="button">${skipped ? "Skipped" : "Skip"}</button>
       </div>
@@ -342,47 +376,53 @@ function renderExercise(ex, block, deload) {
 function renderPill(ex, setIndex, last, progress) {
   const entry = entryFor(ex.id);
   const committedSet = entry && entry.sets[setIndex];
-  const repsOnly = ex.increment === 0;
+  // increment 0 hides the weight stepper, repMin === repMax hides the rep
+  // stepper. abs_circuit hides both, so a round is one tap on the check.
+  const hideWeight = ex.increment === 0;
+  const hideReps = ex.repMin === ex.repMax;
 
   if (committedSet) {
-    const up = committedSet.reps >= ex.repMax;
+    const up = ex.increment > 0 && committedSet.reps >= ex.repMax;
+    const rows = [];
+    if (!hideWeight) rows.push(`<div class="cfield"><span class="val">${fmtWeight(committedSet.weight)}</span><span class="unit">kg</span></div>`);
+    if (!hideReps) rows.push(`<div class="cfield"><span class="val">${committedSet.reps}</span><span class="lbl">reps</span></div>`);
+    if (!rows.length) rows.push(`<div class="cfield"><span class="lbl">round ${setIndex + 1} logged</span></div>`);
     return el(`
       <div class="pill committed ${up ? "up" : ""}">
         <span class="pill-set-no">${setIndex + 1}</span><span class="sweep"></span>
-        <div class="pill-fields">
-          ${repsOnly ? "" : `<div class="cfield"><span class="val">${fmtWeight(committedSet.weight)}</span><span class="unit">kg</span></div>`}
-          <div class="cfield"><span class="val">${committedSet.reps}</span><span class="lbl">reps</span></div>
-        </div>
+        <div class="pill-fields">${rows.join("")}</div>
         <div class="commit">${up ? "&#9650;" : "&#10003;"}</div>
       </div>
     `);
   }
 
   const d = draftFor(ex, setIndex, last, progress);
+  const rows = [];
+  if (!hideWeight) rows.push(`
+    <div class="stepper" data-axis="weight">
+      <button class="step-btn" data-dir="-1" aria-label="decrease weight">&minus;</button>
+      <div class="field"><span class="val mono w-val">${fmtWeight(d.weight)}</span><span class="unit">kg</span></div>
+      <button class="step-btn" data-dir="1" aria-label="increase weight">+</button>
+    </div>`);
+  if (!hideReps) rows.push(`
+    <div class="stepper" data-axis="reps">
+      <button class="step-btn" data-dir="-1" aria-label="decrease reps">&minus;</button>
+      <div class="field"><span class="val mono r-val">${d.reps}</span><span class="lbl">reps</span></div>
+      <button class="step-btn" data-dir="1" aria-label="increase reps">+</button>
+    </div>`);
+  if (!rows.length) rows.push(`<div class="cfield" style="justify-content:center"><span class="lbl">round ${setIndex + 1}</span></div>`);
   const pill = el(`
     <div class="pill">
       <span class="pill-set-no">${setIndex + 1}</span>
-      <div class="pill-fields">
-        ${repsOnly ? "" : `
-        <div class="stepper" data-axis="weight">
-          <button class="step-btn" data-dir="-1" aria-label="decrease weight">&minus;</button>
-          <div class="field"><span class="val mono w-val">${fmtWeight(d.weight)}</span><span class="unit">kg</span></div>
-          <button class="step-btn" data-dir="1" aria-label="increase weight">+</button>
-        </div>`}
-        <div class="stepper" data-axis="reps">
-          <button class="step-btn" data-dir="-1" aria-label="decrease reps">&minus;</button>
-          <div class="field"><span class="val mono r-val">${d.reps}</span><span class="lbl">reps</span></div>
-          <button class="step-btn" data-dir="1" aria-label="increase reps">+</button>
-        </div>
-      </div>
+      <div class="pill-fields">${rows.join("")}</div>
       <button class="commit" aria-label="commit set ${setIndex + 1}">&#10003;</button>
     </div>
   `);
   const wVal = pill.querySelector(".w-val"), rVal = pill.querySelector(".r-val");
-  pill.querySelectorAll('.stepper[data-axis="weight"] .step-btn').forEach((btn) => {
+  if (wVal) pill.querySelectorAll('.stepper[data-axis="weight"] .step-btn').forEach((btn) => {
     btn.onclick = () => { d.weight = Math.max(0, +(d.weight + Number(btn.dataset.dir) * ex.increment).toFixed(2)); wVal.textContent = fmtWeight(d.weight); };
   });
-  pill.querySelectorAll('.stepper[data-axis="reps"] .step-btn').forEach((btn) => {
+  if (rVal) pill.querySelectorAll('.stepper[data-axis="reps"] .step-btn').forEach((btn) => {
     btn.onclick = () => { d.reps = Math.max(0, d.reps + Number(btn.dataset.dir)); rVal.textContent = d.reps; };
   });
   pill.querySelector(".commit").onclick = () => commitSet(ex, setIndex);
@@ -406,7 +446,9 @@ function renderSummary() {
     if (entry.skipped) { setsSkipped++; continue; }
     setsLogged += entry.sets.length;
     if (!entry.sets.length) continue;
-    const ex = exIndex[entry.exerciseId];
+    // Use the exercise as defined on this session's day (rep targets vary by day).
+    const ex = exerciseInDay(s.dayId, entry.exerciseId) || exIndex[entry.exerciseId];
+    if (!ex || ex.increment === 0) continue; // bodyweight neither progresses nor stalls
     if (entry.sets.every((set) => set.reps >= ex.repMax)) up.push(ex.name); else stalled.push(ex.name);
   }
   const mins = s.endedAt && s.startedAt ? Math.round((s.endedAt - s.startedAt) / 60000) : 0;
@@ -437,11 +479,16 @@ function renderDetail(exerciseId) {
   const ex = exIndex[exerciseId];
   const hist = Store.getExerciseHistory(exerciseId);
 
+  let sub = "";
+  if (ex) {
+    if (ex.repMin === ex.repMax) sub = `${ex.sets} sets`;
+    else sub = `${ex.sets} x ${ex.repMin}-${ex.repMax}${ex.increment > 0 ? ` &middot; +${fmtWeight(ex.increment)} kg` : ""}`;
+  }
   const head = el(`
     <div class="day-head">
       <button class="link" id="back" type="button">&larr; Back</button>
       <h1 class="day-title" style="margin-top:6px;">${esc(ex ? ex.name : exerciseId)}</h1>
-      ${ex ? `<p class="day-sub">${ex.sets} x ${ex.repMin}-${ex.repMax} &middot; +${fmtWeight(ex.increment)} kg</p>` : ""}
+      ${ex ? `<p class="day-sub">${sub}</p>` : ""}
     </div>
   `);
   head.querySelector("#back").onclick = () => { state.view = "history"; render(); };
@@ -464,7 +511,8 @@ function renderDetail(exerciseId) {
     const bestE1rm = h.sets.reduce((m, s) => Math.max(m, e1rmOf(s.weight, s.reps)), 0);
     const volume = h.sets.reduce((v, s) => v + s.weight * s.reps, 0);
     const pb = bestE1rm > bestSoFar + 1e-9; if (pb) bestSoFar = bestE1rm;
-    return { date: h.date, e1rm: bestE1rm, volume, pb, sets: h.sets };
+    const day = planDayById(h.dayId);
+    return { date: h.date, e1rm: bestE1rm, volume, pb, sets: h.sets, dayTitle: day ? day.title : "" };
   });
 
   const toggle = el(`
@@ -482,9 +530,9 @@ function renderDetail(exerciseId) {
   cols.appendChild(el(`<div class="chart-wrap">${lineChartSvg(values, pbs, series.map((p) => p.date))}</div>`));
 
   const rows = series.slice().reverse().map((p) =>
-    `<tr><td>${fmtDate(p.date)}</td><td>${fmtWeight(topWeight(p.sets))}</td><td>${p.sets.map((s) => s.reps).join(", ")}</td><td class="${p.pb ? "up" : ""}">${p.e1rm.toFixed(1)}</td></tr>`
+    `<tr><td>${fmtDate(p.date)}</td><td>${esc(p.dayTitle)}</td><td>${fmtWeight(topWeight(p.sets))}</td><td>${p.sets.map((s) => s.reps).join(", ")}</td><td class="${p.pb ? "up" : ""}">${p.e1rm.toFixed(1)}</td></tr>`
   ).join("");
-  cols.appendChild(el(`<table class="htable"><thead><tr><th>Date</th><th>Weight</th><th>Reps</th><th>e1RM</th></tr></thead><tbody>${rows}</tbody></table>`));
+  cols.appendChild(el(`<table class="htable"><thead><tr><th>Date</th><th>Day</th><th>Weight</th><th>Reps</th><th>e1RM</th></tr></thead><tbody>${rows}</tbody></table>`));
   app.appendChild(cols);
 }
 
@@ -534,8 +582,8 @@ function dayWentUp(session) {
   if (!session) return false;
   for (const e of session.entries) {
     if (e.skipped || !e.sets || !e.sets.length) continue;
-    const ex = exIndex[e.exerciseId];
-    if (ex && e.sets.every((s) => s.reps >= ex.repMax)) return true;
+    const ex = exerciseInDay(session.dayId, e.exerciseId) || exIndex[e.exerciseId];
+    if (ex && ex.increment > 0 && e.sets.every((s) => s.reps >= ex.repMax)) return true;
   }
   return false;
 }
@@ -695,13 +743,18 @@ function renderSessionDetail(sessionId) {
   if (!s) { app.appendChild(el(`<section class="empty"><div class="sub">Nothing logged.</div></section>`)); return; }
 
   for (const entry of s.entries) {
-    const ex = exIndex[entry.exerciseId];
+    const ex = exerciseInDay(s.dayId, entry.exerciseId) || exIndex[entry.exerciseId];
     const name = ex ? ex.name : entry.exerciseId;
-    const up = ex && !entry.skipped && entry.sets.length && entry.sets.every((set) => set.reps >= ex.repMax);
-    const detail = entry.skipped
-      ? `<span class="ex-last">Skipped${entry.skipReason ? " (" + esc(entry.skipReason) + ")" : ""}</span>`
-      : `<span class="ex-last mono">${entry.sets.map((s2) => `${fmtWeight(s2.weight)}x${s2.reps}`).join(", ") || "no sets"}</span>`;
-    app.appendChild(el(`<div class="block"><div class="ex-head"><span class="ex-name">${esc(name)}</span>${up ? `<span class="badge-add">ADD WEIGHT</span>` : ""}</div>${detail}</div>`));
+    const hideWeight = ex && ex.increment === 0;
+    const hideReps = ex && ex.repMin === ex.repMax;
+    const up = ex && ex.increment > 0 && !entry.skipped && entry.sets.length && entry.sets.every((set) => set.reps >= ex.repMax);
+    let body;
+    if (entry.skipped) body = `Skipped${entry.skipReason ? " (" + esc(entry.skipReason) + ")" : ""}`;
+    else if (!entry.sets.length) body = "no sets";
+    else if (hideWeight && hideReps) body = `${entry.sets.length} rounds`;
+    else if (hideWeight) body = entry.sets.map((s2) => s2.reps).join(", ") + " reps";
+    else body = entry.sets.map((s2) => `${fmtWeight(s2.weight)}x${s2.reps}`).join(", ");
+    app.appendChild(el(`<div class="block"><div class="ex-head"><span class="ex-name">${esc(name)}</span>${up ? `<span class="badge-add">ADD WEIGHT</span>` : ""}</div><span class="ex-last mono">${esc(body)}</span></div>`));
   }
 }
 
