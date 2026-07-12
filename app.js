@@ -347,10 +347,12 @@ function renderPill(ex, setIndex, last, progress) {
   if (committedSet) {
     const up = committedSet.reps >= ex.repMax;
     return el(`
-      <div class="pill committed ${up ? "up" : ""} ${repsOnly ? "reps-only" : ""}">
+      <div class="pill committed ${up ? "up" : ""}">
         <span class="pill-set-no">${setIndex + 1}</span><span class="sweep"></span>
-        ${repsOnly ? "" : `<div class="field"><span class="val mono">${fmtWeight(committedSet.weight)}</span><span class="unit">kg</span><span class="lbl">weight</span></div>`}
-        <div class="field"><span class="val mono">${committedSet.reps}</span><span class="lbl">reps</span></div>
+        <div class="pill-fields">
+          ${repsOnly ? "" : `<div class="cfield"><span class="val">${fmtWeight(committedSet.weight)}</span><span class="unit">kg</span></div>`}
+          <div class="cfield"><span class="val">${committedSet.reps}</span><span class="lbl">reps</span></div>
+        </div>
         <div class="commit">${up ? "&#9650;" : "&#10003;"}</div>
       </div>
     `);
@@ -358,18 +360,20 @@ function renderPill(ex, setIndex, last, progress) {
 
   const d = draftFor(ex, setIndex, last, progress);
   const pill = el(`
-    <div class="pill ${repsOnly ? "reps-only" : ""}">
+    <div class="pill">
       <span class="pill-set-no">${setIndex + 1}</span>
-      ${repsOnly ? "" : `
-      <div class="stepper" data-axis="weight">
-        <button class="step-btn" data-dir="-1" aria-label="decrease weight">&minus;</button>
-        <div class="field"><span class="val mono w-val">${fmtWeight(d.weight)}</span><span class="unit">kg</span></div>
-        <button class="step-btn" data-dir="1" aria-label="increase weight">+</button>
-      </div>`}
-      <div class="stepper" data-axis="reps">
-        <button class="step-btn" data-dir="-1" aria-label="decrease reps">&minus;</button>
-        <div class="field"><span class="val mono r-val">${d.reps}</span><span class="lbl">reps</span></div>
-        <button class="step-btn" data-dir="1" aria-label="increase reps">+</button>
+      <div class="pill-fields">
+        ${repsOnly ? "" : `
+        <div class="stepper" data-axis="weight">
+          <button class="step-btn" data-dir="-1" aria-label="decrease weight">&minus;</button>
+          <div class="field"><span class="val mono w-val">${fmtWeight(d.weight)}</span><span class="unit">kg</span></div>
+          <button class="step-btn" data-dir="1" aria-label="increase weight">+</button>
+        </div>`}
+        <div class="stepper" data-axis="reps">
+          <button class="step-btn" data-dir="-1" aria-label="decrease reps">&minus;</button>
+          <div class="field"><span class="val mono r-val">${d.reps}</span><span class="lbl">reps</span></div>
+          <button class="step-btn" data-dir="1" aria-label="increase reps">+</button>
+        </div>
       </div>
       <button class="commit" aria-label="commit set ${setIndex + 1}">&#10003;</button>
     </div>

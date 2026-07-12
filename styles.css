@@ -126,24 +126,33 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 /* ---------- set pills ---------- */
 
 .pills { display: flex; flex-direction: column; gap: 8px; }
-.pill { position: relative; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 6px; overflow: hidden; min-height: var(--tap); }
+/* Weight stacked over reps on the left, a tall commit on the right. This is the
+   only layout that fits five generous tap targets on a 360px phone without the
+   check being pushed off screen. */
+.pill { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 60px; align-items: stretch; gap: 8px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 8px; overflow: hidden; }
 .pill.committed { border-color: var(--dim); }
 .pill .sweep { position: absolute; inset: 0; background: var(--surface); transform-origin: left center; transform: scaleX(0); z-index: 0; }
 .pill.committed .sweep { transform: scaleX(1); transition: transform 180ms linear; }
-.stepper { display: flex; align-items: center; gap: 2px; z-index: 1; }
-.step-btn { width: var(--tap); height: var(--tap); background: transparent; border: 0; color: var(--bone); font-family: var(--mono); font-size: 22px; line-height: 1; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+.pill-set-no { position: absolute; left: 9px; top: 3px; font-family: var(--mono); font-size: 9px; color: var(--dim); z-index: 2; }
+
+.pill-fields { display: flex; flex-direction: column; gap: 6px; min-width: 0; z-index: 1; padding-top: 4px; }
+.stepper { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.step-btn { flex: none; width: 48px; height: 44px; background: transparent; border: 0; color: var(--bone); font-family: var(--mono); font-size: 24px; line-height: 1; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
 .step-btn:active { background: var(--line); }
 .step-btn:disabled { color: var(--dim); opacity: 0.4; }
-.field { min-width: 76px; text-align: center; z-index: 1; }
+.field { flex: 1; min-width: 0; display: flex; align-items: baseline; justify-content: center; gap: 3px; }
 .field .val { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 600; font-size: 24px; color: var(--bone); }
-.field .unit { font-family: var(--mono); font-size: 12px; color: var(--steel); margin-left: 3px; }
-.field .lbl { display: block; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; color: var(--dim); text-transform: uppercase; margin-top: 1px; }
-.pill.reps-only { grid-template-columns: 1fr auto; }
-.commit { width: 56px; height: var(--tap); min-height: var(--tap); z-index: 1; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; color: var(--steel); font-size: 22px; display: flex; align-items: center; justify-content: center; }
+.field .unit { font-family: var(--mono); font-size: 12px; color: var(--steel); }
+.field .lbl { font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em; color: var(--dim); text-transform: uppercase; }
+/* committed rows: static value, no buttons */
+.cfield { display: flex; align-items: baseline; gap: 5px; padding-left: 6px; }
+.cfield .val { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 600; font-size: 24px; color: var(--bone); }
+.cfield .unit, .cfield .lbl { font-family: var(--mono); font-size: 11px; color: var(--steel); }
+
+.commit { z-index: 1; align-self: stretch; min-height: 48px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; color: var(--steel); font-size: 26px; display: flex; align-items: center; justify-content: center; }
 .commit:active { background: var(--line); }
 .pill.committed .commit { color: var(--bone); border-color: var(--dim); }
 .pill.committed.up .commit { color: var(--signal); }
-.pill-set-no { position: absolute; left: 8px; top: 4px; font-family: var(--mono); font-size: 9px; color: var(--dim); z-index: 1; }
 
 /* ---------- rest timer (sits above the bottom nav) ---------- */
 
